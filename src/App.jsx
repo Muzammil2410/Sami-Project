@@ -32,6 +32,12 @@ function App() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const imageModules = import.meta.glob('./assets/images/*.jpeg', { eager: true, import: 'default' })
+  const videoModules = {
+    ...import.meta.glob('./assets/images/*.MP4', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/images/*.MOV', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/images/*.mp4', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/images/*.mov', { eager: true, import: 'default' }),
+  }
   const [bagItems, setBagItems] = useState([])
   const [notice, setNotice] = useState('')
   const [customerData, setCustomerData] = useState({
@@ -46,8 +52,9 @@ function App() {
   const products = useMemo(() => {
     const rawProducts = Object.entries(imageModules)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([, src], index) => ({
+      .map(([path, src], index) => ({
         id: index + 1,
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
         src,
         gallery: [src],
         name: `Luxe Set ${String(index + 1).padStart(2, '0')}`,
@@ -81,7 +88,27 @@ function App() {
     const groupedIds = new Set(groupedProductSets.flat())
     const standaloneProducts = rawProducts.filter((item) => !groupedIds.has(item.id))
 
-    return [...standaloneProducts, ...groupedProducts].sort((a, b) => a.id - b.id)
+    const combinedProducts = [...standaloneProducts, ...groupedProducts].sort((a, b) => a.id - b.id)
+
+    const imageR = rawProducts.find((item) => item.fileName === 'r')
+    const imageQ = rawProducts.find((item) => item.fileName === 'q')
+    const imageT = rawProducts.find((item) => item.fileName === 't')
+    const imageS = rawProducts.find((item) => item.fileName === 's')
+
+    if (imageR && imageQ && imageT && imageS) {
+      return combinedProducts.map((product) =>
+        product.id === 54
+          ? {
+              ...product,
+              src: imageR.src,
+              gallery: [imageR.src, imageQ.src, imageT.src, imageS.src],
+              description: 'Combined product gallery for Luxe Set 54. Scroll through 4 preview images for full product angles.',
+            }
+          : product,
+      )
+    }
+
+    return combinedProducts
   }, [imageModules])
 
   const heroImage = products[0]?.src
@@ -93,6 +120,14 @@ function App() {
   const accessories = products.filter((_, index) => index % 3 === 0)
   const checkoutProductId = Number(searchParams.get('product'))
   const checkoutProduct = products.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const landingVideos = useMemo(
+    () =>
+      Object.entries(videoModules)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, src]) => src)
+        .slice(0, 3),
+    [videoModules],
+  )
 
   const addToBag = (product) => {
     setBagItems((prev) => [...prev, product])
@@ -368,6 +403,35 @@ function App() {
           }
         />
       </Routes>
+
+      {landingVideos.length > 0 ? (
+        <section className="mx-auto mt-6 max-w-7xl px-6 pb-10 lg:px-8">
+          <div className="mb-5 flex items-end justify-between">
+            <h2 className="text-3xl font-semibold text-[#3f1f34]">Style In Motion</h2>
+            <p className="text-sm text-[#7d5d70]">A quick look at our latest collection videos.</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {landingVideos.map((videoSrc, index) => (
+              <article key={videoSrc} className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#efdfe8]">
+                <video
+                  src={videoSrc}
+                  className="h-[360px] w-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  controls
+                  preload="metadata"
+                />
+                <div className="p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Lookbook Clip {index + 1}</p>
+                  <p className="mt-1 text-sm text-[#6e5362]">Signature details and fit highlights from the latest edit.</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <footer className="mt-8 border-t border-[#e7d9e3] bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
