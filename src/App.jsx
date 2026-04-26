@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 const navItems = [
   { label: 'New Arrivals', to: '/new-arrivals' },
@@ -30,6 +30,7 @@ const groupedProductSets = [
 
 function App() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const imageModules = import.meta.glob('./assets/images/*.jpeg', { eager: true, import: 'default' })
   const newImageModules = import.meta.glob('./assets/new/*.jpeg', { eager: true, import: 'default' })
@@ -111,18 +112,25 @@ function App() {
         : combinedProducts
 
     return productsWithSet54.map((product) => {
-      if (product.id !== 49 || product.gallery.length < 2) {
-        return product
+      if (product.id === 49 && product.gallery.length >= 2) {
+        const displayImage = product.gallery[product.gallery.length - 1]
+        const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
+
+        return {
+          ...product,
+          src: displayImage,
+          gallery: reorderedGallery,
+        }
       }
 
-      const displayImage = product.gallery[product.gallery.length - 1]
-      const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
-
-      return {
-        ...product,
-        src: displayImage,
-        gallery: reorderedGallery,
+      if (product.id === 55 && imageQ && imageT && imageS) {
+        return {
+          ...product,
+          gallery: [product.src, imageQ.src, imageT.src, imageS.src],
+        }
       }
+
+      return product
     })
   }, [imageModules])
 
@@ -150,6 +158,8 @@ function App() {
     const imageM = newImages.find((item) => item.fileName === 'm')
     const imageOO = newImages.find((item) => item.fileName === 'oo')
     const imageLL = newImages.find((item) => item.fileName === 'll')
+    const imageAA = newImages.find((item) => item.fileName === 'aa')
+    const imageBB = newImages.find((item) => item.fileName === 'bb')
 
     const customProducts = []
 
@@ -222,22 +232,300 @@ function App() {
     if (imageLL) {
       customProducts.push({
         id: 1007,
-        src: imageLL.src,
-        gallery: [imageLL.src],
+        src: imageBB?.src ?? imageLL.src,
+        gallery: imageAA && imageBB ? [imageBB.src, imageAA.src, imageLL.src] : [imageLL.src],
         name: 'Luxe Set 1007',
         price: 'GBP 38.00',
-        description: 'Single product preview for Luxe Set 1007.',
+        description:
+          imageAA && imageBB
+            ? 'Combined product gallery for Luxe Set 1007. Scroll through 3 preview images for full product angles.'
+            : 'Single product preview for Luxe Set 1007.',
       })
     }
 
     return customProducts
   }, [newImageModules])
-  const productsForLookup = [...products, ...extraLingerieProducts]
+  const extraNightwearProducts = useMemo(() => {
+    const newImages = Object.entries(newImageModules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([path, src]) => ({
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+        src,
+      }))
+
+    const imageGG = newImages.find((item) => item.fileName === 'gg')
+    const imageJJ = newImages.find((item) => item.fileName === 'jj')
+    const image00 = newImages.find((item) => item.fileName === '00')
+    const image01 = newImages.find((item) => item.fileName === '01')
+    const image02 = newImages.find((item) => item.fileName === '02')
+    const image03 = newImages.find((item) => item.fileName === '03')
+    const image04 = newImages.find((item) => item.fileName === '04')
+    const image06 = newImages.find((item) => item.fileName === '06')
+    const image07 = newImages.find((item) => item.fileName === '07')
+    const image08 = newImages.find((item) => item.fileName === '08')
+    const image09 = newImages.find((item) => item.fileName === '09')
+    const image10 = newImages.find((item) => item.fileName === '10')
+    const image11 = newImages.find((item) => item.fileName === '11')
+    const image12 = newImages.find((item) => item.fileName === '12')
+    const image13 = newImages.find((item) => item.fileName === '13')
+    const image14 = newImages.find((item) => item.fileName === '14')
+    const image15 = newImages.find((item) => item.fileName === '15')
+    const image16 = newImages.find((item) => item.fileName === '16')
+    const image17 = newImages.find((item) => item.fileName === '17')
+    const image18 = newImages.find((item) => item.fileName === '18')
+    const customNightwear = []
+
+    if (imageGG) {
+      const sequenceFor1008 = image00 && image01 && image02 && image03 && image04
+        ? [imageGG.src, image00.src, image01.src, image02.src, image03.src, image04.src]
+        : [imageGG.src]
+
+      customNightwear.push({
+        id: 1008,
+        src: sequenceFor1008[0],
+        gallery: sequenceFor1008,
+        name: 'Luxe Set 1008',
+        price: 'GBP 40.00',
+        description:
+          sequenceFor1008.length > 1
+            ? 'Combined product gallery for Luxe Set 1008. Scroll through 6 preview images for full product angles.'
+            : 'Single product preview for Luxe Set 1008.',
+      })
+    }
+
+    if (imageJJ) {
+      const sequenceFor1009 = image06 && image07 && image08 && image09 && image10 && image11
+        ? [imageJJ.src, image06.src, image07.src, image08.src, image09.src, image10.src, image11.src]
+        : [imageJJ.src]
+
+      customNightwear.push({
+        id: 1009,
+        src: sequenceFor1009[0],
+        gallery: sequenceFor1009,
+        name: 'Luxe Set 1009',
+        price: 'GBP 40.00',
+        description:
+          sequenceFor1009.length > 1
+            ? 'Combined product gallery for Luxe Set 1009. Scroll through 7 preview images for full product angles.'
+            : 'Single product preview for Luxe Set 1009.',
+      })
+    }
+
+    if (image00) {
+      customNightwear.push({
+        id: 1010,
+        src: image00.src,
+        gallery: [image00.src],
+        name: 'Luxe Set 1010',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1010.',
+      })
+    }
+
+    if (image01) {
+      customNightwear.push({
+        id: 1011,
+        src: image01.src,
+        gallery: [image01.src],
+        name: 'Luxe Set 1011',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1011.',
+      })
+    }
+
+    if (image02) {
+      customNightwear.push({
+        id: 1012,
+        src: image02.src,
+        gallery: [image02.src],
+        name: 'Luxe Set 1012',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1012.',
+      })
+    }
+
+    if (image03) {
+      customNightwear.push({
+        id: 1013,
+        src: image03.src,
+        gallery: [image03.src],
+        name: 'Luxe Set 1013',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1013.',
+      })
+    }
+
+    if (image04) {
+      customNightwear.push({
+        id: 1014,
+        src: image04.src,
+        gallery: [image04.src],
+        name: 'Luxe Set 1014',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1014.',
+      })
+    }
+
+    if (image06) {
+      customNightwear.push({
+        id: 1015,
+        src: image06.src,
+        gallery: [image06.src],
+        name: 'Luxe Set 1015',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1015.',
+      })
+    }
+
+    if (image07) {
+      customNightwear.push({
+        id: 1016,
+        src: image07.src,
+        gallery: [image07.src],
+        name: 'Luxe Set 1016',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1016.',
+      })
+    }
+
+    if (image08) {
+      customNightwear.push({
+        id: 1017,
+        src: image08.src,
+        gallery: [image08.src],
+        name: 'Luxe Set 1017',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1017.',
+      })
+    }
+
+    if (image09) {
+      customNightwear.push({
+        id: 1018,
+        src: image09.src,
+        gallery: [image09.src],
+        name: 'Luxe Set 1018',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1018.',
+      })
+    }
+
+    if (image10) {
+      customNightwear.push({
+        id: 1019,
+        src: image10.src,
+        gallery: [image10.src],
+        name: 'Luxe Set 1019',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1019.',
+      })
+    }
+
+    if (image11) {
+      customNightwear.push({
+        id: 1020,
+        src: image11.src,
+        gallery: [image11.src],
+        name: 'Luxe Set 1020',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1020.',
+      })
+    }
+
+    if (image12) {
+      const sequenceFor1021 = image13 && image14 && image15 && image16 && image17 && image18
+        ? [image12.src, image13.src, image14.src, image15.src, image16.src, image17.src, image18.src]
+        : [image12.src]
+
+      customNightwear.push({
+        id: 1021,
+        src: sequenceFor1021[0],
+        gallery: sequenceFor1021,
+        name: 'Luxe Set 1021',
+        price: 'GBP 40.00',
+        description:
+          sequenceFor1021.length > 1
+            ? 'Combined product gallery for Luxe Set 1021. Scroll through 7 preview images for full product angles.'
+            : 'Single product preview for Luxe Set 1021.',
+      })
+    }
+
+    if (image13) {
+      customNightwear.push({
+        id: 1022,
+        src: image13.src,
+        gallery: [image13.src],
+        name: 'Luxe Set 1022',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1022.',
+      })
+    }
+
+    if (image14) {
+      customNightwear.push({
+        id: 1023,
+        src: image14.src,
+        gallery: [image14.src],
+        name: 'Luxe Set 1023',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1023.',
+      })
+    }
+
+    if (image15) {
+      customNightwear.push({
+        id: 1024,
+        src: image15.src,
+        gallery: [image15.src],
+        name: 'Luxe Set 1024',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1024.',
+      })
+    }
+
+    if (image16) {
+      customNightwear.push({
+        id: 1025,
+        src: image16.src,
+        gallery: [image16.src],
+        name: 'Luxe Set 1025',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1025.',
+      })
+    }
+
+    if (image17) {
+      customNightwear.push({
+        id: 1026,
+        src: image17.src,
+        gallery: [image17.src],
+        name: 'Luxe Set 1026',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1026.',
+      })
+    }
+
+    if (image18) {
+      customNightwear.push({
+        id: 1027,
+        src: image18.src,
+        gallery: [image18.src],
+        name: 'Luxe Set 1027',
+        price: 'GBP 40.00',
+        description: 'Single product preview for Luxe Set 1027.',
+      })
+    }
+
+    return customNightwear
+  }, [newImageModules])
+  const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts]
   const featuredProducts = products.slice(2, 10)
   const lingerieSets = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
   const newArrivals = lingerieSets.slice(0, Math.min(12, lingerieSets.length))
-  const nightwear = products.filter((_, index) => index % 2 === 0)
-  const accessories = products.filter((_, index) => index % 3 === 0)
+  const nightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)].filter(
+    (item) => item.id !== 57,
+  )
+  const accessories = products.filter((_, index) => index % 3 === 0).filter((item) => item.id !== 57)
   const checkoutProductId = Number(searchParams.get('product'))
   const checkoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
   const extraGalleryImageForSet40 = useMemo(() => {
@@ -252,7 +540,7 @@ function App() {
   }, [newImageModules])
   const landingVideos = useMemo(
     () => {
-      const preferredOrder = ['v1', 'v2', 'v3', 'v5']
+      const preferredOrder = ['v1', 'v2', 'v3', 'v4', 'v5']
       const videoEntries = Object.entries(videoModules)
 
       const orderedVideos = preferredOrder
@@ -285,6 +573,10 @@ function App() {
     navigate('/thank-you')
     setNotice(`Order confirmed for ${checkoutProduct ? checkoutProduct.name : 'selected item'}.`)
   }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  }, [location.pathname, location.search])
 
   const ProductGrid = ({ items }) => (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -329,6 +621,10 @@ function App() {
     const { id } = useParams()
     const product = productsForLookup.find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
+    const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
+    const isNightwearProduct = product ? nightwear.some((item) => item.id === product.id) : false
+    const backPath = isNightwearProduct ? '/nightwear' : '/lingerie-sets'
+    const backLabel = isNightwearProduct ? 'Back to Nightwear' : 'Back to Lingerie Sets'
     const productGallery =
       product?.id === 40 && extraGalleryImageForSet40
         ? [...product.gallery, extraGalleryImageForSet40]
@@ -342,8 +638,8 @@ function App() {
       return (
         <section className="mx-auto max-w-3xl px-6 py-12 text-center">
           <h2 className="text-3xl font-semibold text-[#3f1f34]">Product not found</h2>
-          <Link to="/lingerie-sets" className="mt-6 inline-block rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white">
-            Back to Lingerie Sets
+          <Link to={backPath} className="mt-6 inline-block rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white">
+            {backLabel}
           </Link>
         </section>
       )
@@ -351,8 +647,8 @@ function App() {
 
     return (
       <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-        <Link to="/lingerie-sets" className="mb-6 inline-block rounded-full border border-[#dcc5d1] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-white">
-          Back to Lingerie Sets
+        <Link to={backPath} className="mb-6 inline-block rounded-full border border-[#dcc5d1] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-white">
+          {backLabel}
         </Link>
         <article className="grid gap-8 rounded-3xl bg-white p-6 ring-1 ring-[#ead9e4] md:grid-cols-2 md:p-8">
           <div>
@@ -381,6 +677,11 @@ function App() {
             <h2 className="mt-3 text-4xl font-semibold text-[#3f1f34]">{product.name}</h2>
             <p className="mt-4 text-xl font-semibold text-[#662845]">{product.price}</p>
             <p className="mt-5 text-base leading-7 text-[#6e5362]">{product.description}</p>
+            {showSetOfferNotice ? (
+              <p className="mt-4 rounded-xl bg-[#f6e7ef] px-4 py-3 text-sm font-semibold text-[#7d2f56]">
+                Get 20% off if you get this whole set.
+              </p>
+            ) : null}
             <div className="mt-8 flex flex-wrap gap-3">
               <button type="button" onClick={() => addToBag(product)} className="rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7]">
                 Add to Bag
