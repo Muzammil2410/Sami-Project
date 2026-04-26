@@ -32,6 +32,7 @@ function App() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const imageModules = import.meta.glob('./assets/images/*.jpeg', { eager: true, import: 'default' })
+  const newImageModules = import.meta.glob('./assets/new/*.jpeg', { eager: true, import: 'default' })
   const videoModules = {
     ...import.meta.glob('./assets/images/*.MP4', { eager: true, import: 'default' }),
     ...import.meta.glob('./assets/images/*.MOV', { eager: true, import: 'default' }),
@@ -95,37 +96,177 @@ function App() {
     const imageT = rawProducts.find((item) => item.fileName === 't')
     const imageS = rawProducts.find((item) => item.fileName === 's')
 
-    if (imageR && imageQ && imageT && imageS) {
-      return combinedProducts.map((product) =>
-        product.id === 54
-          ? {
-              ...product,
-              src: imageR.src,
-              gallery: [imageR.src, imageQ.src, imageT.src, imageS.src],
-              description: 'Combined product gallery for Luxe Set 54. Scroll through 4 preview images for full product angles.',
-            }
-          : product,
-      )
-    }
+    const productsWithSet54 =
+      imageR && imageQ && imageT && imageS
+        ? combinedProducts.map((product) =>
+            product.id === 54
+              ? {
+                  ...product,
+                  src: imageR.src,
+                  gallery: [imageR.src, imageQ.src, imageT.src, imageS.src],
+                  description: 'Combined product gallery for Luxe Set 54. Scroll through 4 preview images for full product angles.',
+                }
+              : product,
+          )
+        : combinedProducts
 
-    return combinedProducts
+    return productsWithSet54.map((product) => {
+      if (product.id !== 49 || product.gallery.length < 2) {
+        return product
+      }
+
+      const displayImage = product.gallery[product.gallery.length - 1]
+      const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
+
+      return {
+        ...product,
+        src: displayImage,
+        gallery: reorderedGallery,
+      }
+    })
   }, [imageModules])
 
   const heroImage = products[0]?.src
   const featureImage = products[1]?.src
+  const extraLingerieProducts = useMemo(() => {
+    const newImages = Object.entries(newImageModules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([path, src]) => ({
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+        src,
+      }))
+
+    const imageA = newImages.find((item) => item.fileName === 'a')
+    const imageB = newImages.find((item) => item.fileName === 'b')
+    const imageC = newImages.find((item) => item.fileName === 'c')
+    const imageD = newImages.find((item) => item.fileName === 'd')
+    const imageN = newImages.find((item) => item.fileName === 'n')
+    const imageP = newImages.find((item) => item.fileName === 'p')
+    const imageJ = newImages.find((item) => item.fileName === 'j')
+    const imageF = newImages.find((item) => item.fileName === 'f')
+    const imageO = newImages.find((item) => item.fileName === 'o')
+    const imageK = newImages.find((item) => item.fileName === 'k')
+    const imageL = newImages.find((item) => item.fileName === 'l')
+    const imageM = newImages.find((item) => item.fileName === 'm')
+    const imageOO = newImages.find((item) => item.fileName === 'oo')
+    const imageLL = newImages.find((item) => item.fileName === 'll')
+
+    const customProducts = []
+
+    if (imageA && imageB) {
+      customProducts.push({
+        id: 1001,
+        src: imageA.src,
+        gallery: [imageA.src, imageB.src],
+        name: 'Luxe Set 1001',
+        price: 'GBP 39.00',
+        description: 'Combined product gallery for Luxe Set 1001. Scroll through 2 preview images for full product angles.',
+      })
+    }
+
+    if (imageC && imageD) {
+      customProducts.push({
+        id: 1002,
+        src: imageC.src,
+        gallery: [imageC.src, imageD.src],
+        name: 'Luxe Set 1002',
+        price: 'GBP 41.00',
+        description: 'Combined product gallery for Luxe Set 1002. Scroll through 2 preview images for full product angles.',
+      })
+    }
+
+    if (imageN && imageP && imageJ) {
+      customProducts.push({
+        id: 1003,
+        src: imageN.src,
+        gallery: [imageN.src, imageP.src, imageJ.src],
+        name: 'Luxe Set 1003',
+        price: 'GBP 43.00',
+        description: 'Combined product gallery for Luxe Set 1003. Scroll through 3 preview images for full product angles.',
+      })
+    }
+
+    if (imageF) {
+      customProducts.push({
+        id: 1004,
+        src: imageF.src,
+        gallery: [imageF.src],
+        name: 'Luxe Set 1004',
+        price: 'GBP 37.00',
+        description: 'Single product preview for Luxe Set 1004.',
+      })
+    }
+
+    if (imageO && imageK && imageL && imageM) {
+      customProducts.push({
+        id: 1005,
+        src: imageO.src,
+        gallery: [imageO.src, imageK.src, imageL.src, imageM.src],
+        name: 'Luxe Set 1005',
+        price: 'GBP 45.00',
+        description: 'Combined product gallery for Luxe Set 1005. Scroll through 4 preview images for full product angles.',
+      })
+    }
+
+    if (imageOO) {
+      customProducts.push({
+        id: 1006,
+        src: imageOO.src,
+        gallery: [imageOO.src],
+        name: 'Luxe Set 1006',
+        price: 'GBP 38.00',
+        description: 'Single product preview for Luxe Set 1006.',
+      })
+    }
+
+    if (imageLL) {
+      customProducts.push({
+        id: 1007,
+        src: imageLL.src,
+        gallery: [imageLL.src],
+        name: 'Luxe Set 1007',
+        price: 'GBP 38.00',
+        description: 'Single product preview for Luxe Set 1007.',
+      })
+    }
+
+    return customProducts
+  }, [newImageModules])
+  const productsForLookup = [...products, ...extraLingerieProducts]
   const featuredProducts = products.slice(2, 10)
-  const newArrivals = products
-  const lingerieSets = products.slice(0, Math.min(16, products.length))
+  const lingerieSets = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
+  const newArrivals = lingerieSets.slice(0, Math.min(12, lingerieSets.length))
   const nightwear = products.filter((_, index) => index % 2 === 0)
   const accessories = products.filter((_, index) => index % 3 === 0)
   const checkoutProductId = Number(searchParams.get('product'))
-  const checkoutProduct = products.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const checkoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const extraGalleryImageForSet40 = useMemo(() => {
+    const newImages = Object.entries(newImageModules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([path, src]) => ({
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+        src,
+      }))
+
+    return newImages.find((item) => item.fileName === 'e')?.src ?? null
+  }, [newImageModules])
   const landingVideos = useMemo(
-    () =>
-      Object.entries(videoModules)
-        .sort(([a], [b]) => a.localeCompare(b))
+    () => {
+      const preferredOrder = ['v1', 'v2', 'v3', 'v5']
+      const videoEntries = Object.entries(videoModules)
+
+      const orderedVideos = preferredOrder
+        .map((name) =>
+          videoEntries.find(([path]) => {
+            const normalizedPath = path.toLowerCase().replace(/\\/g, '/')
+            return normalizedPath.includes(`/${name}.`)
+          }),
+        )
+        .filter(Boolean)
         .map(([, src]) => src)
-        .slice(0, 3),
+
+      return orderedVideos
+    },
     [videoModules],
   )
 
@@ -186,8 +327,12 @@ function App() {
 
   const ProductDetailsPage = () => {
     const { id } = useParams()
-    const product = products.find((item) => item.id === Number(id))
+    const product = productsForLookup.find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
+    const productGallery =
+      product?.id === 40 && extraGalleryImageForSet40
+        ? [...product.gallery, extraGalleryImageForSet40]
+        : product?.gallery ?? []
 
     useEffect(() => {
       setSelectedPreview(0)
@@ -212,13 +357,13 @@ function App() {
         <article className="grid gap-8 rounded-3xl bg-white p-6 ring-1 ring-[#ead9e4] md:grid-cols-2 md:p-8">
           <div>
             <img
-              src={product.gallery[selectedPreview] ?? product.src}
+              src={productGallery[selectedPreview] ?? product.src}
               alt={product.name}
               className="h-full w-full rounded-2xl object-cover"
             />
-            {product.gallery.length > 1 ? (
+            {productGallery.length > 1 ? (
               <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                {product.gallery.map((preview, index) => (
+                {productGallery.map((preview, index) => (
                   <button
                     key={preview}
                     type="button"
