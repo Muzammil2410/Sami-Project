@@ -28,6 +28,36 @@ const groupedProductSets = [
   [49, 50, 51, 52],
 ]
 
+const productOverrides = {
+  1: { name: 'Love Affair Dress', price: 'GBP 34.99' },
+  2: { name: 'Whisper', price: 'GBP 24.99' },
+  3: { name: 'Ivory Whispher Set', price: 'GBP 34.99' },
+  9: { name: 'Midnight Muse', price: 'GBP 29.99' },
+  13: { name: 'Obsidian Lace Bodysuit', price: 'GBP 39.99' },
+  19: { name: 'Midnight Bloom', price: 'GBP 29.99' },
+  22: { name: 'Midnight Bloom', price: 'GBP 29.99' },
+  27: { name: 'Midnight Bloom', price: 'GBP 29.99' },
+  36: { name: 'Blush Crush', price: 'GBP 29.99' },
+  40: { name: 'Bow Babydoll', price: 'GBP 34.99' },
+  43: { name: 'Whispher Bodyysuit', price: 'GBP 34.99' },
+  48: { name: 'French Kiss Maid Set', price: 'GBP 34.99' },
+  49: { name: 'French Kiss Maid Set', price: 'GBP 34.99' },
+  1001: { name: 'Bride Bloom Set', price: 'GBP 39.99' },
+  1002: { name: 'Bride Bloom Set', price: 'GBP 39.99' },
+  1003: { name: 'Love Spell Set', price: 'GBP 19.99' },
+  1005: { name: 'Love Lace Set', price: 'GBP 19.99' },
+  1006: { name: 'sculptBodysuit', price: 'GBP 24.99' },
+  1007: { name: 'Whispher Bodysuit', price: 'GBP 34.99' },
+  1008: { name: 'Love Story Set', price: 'GBP 64.99' },
+  1009: { name: 'Love Story Set', price: 'GBP 64.99' },
+  1021: { name: 'Love Story Set', price: 'GBP 64.99' },
+}
+
+const applyProductOverride = (product) => {
+  const override = productOverrides[product.id]
+  return override ? { ...product, ...override } : product
+}
+
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -116,21 +146,21 @@ function App() {
         const displayImage = product.gallery[product.gallery.length - 1]
         const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
 
-        return {
+        return applyProductOverride({
           ...product,
           src: displayImage,
           gallery: reorderedGallery,
-        }
+        })
       }
 
       if (product.id === 55 && imageQ && imageT && imageS) {
-        return {
+        return applyProductOverride({
           ...product,
           gallery: [product.src, imageQ.src, imageT.src, imageS.src],
-        }
+        })
       }
 
-      return product
+      return applyProductOverride(product)
     })
   }, [imageModules])
 
@@ -243,7 +273,7 @@ function App() {
       })
     }
 
-    return customProducts
+    return customProducts.map(applyProductOverride)
   }, [newImageModules])
   const extraNightwearProducts = useMemo(() => {
     const newImages = Object.entries(newImageModules)
@@ -516,7 +546,7 @@ function App() {
       })
     }
 
-    return customNightwear
+    return customNightwear.map(applyProductOverride)
   }, [newImageModules])
   const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts]
   const featuredProducts = products.slice(2, 10)
