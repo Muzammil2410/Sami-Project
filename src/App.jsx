@@ -578,11 +578,11 @@ function App() {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [location.pathname, location.search])
 
-  const ProductGrid = ({ items }) => (
+  const ProductGrid = ({ items, sourcePath }) => (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {items.map((product) => (
         <article key={product.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#efdfe8]">
-          <Link to={`/product/${product.id}`} className="block">
+          <Link to={`/product/${product.id}`} state={{ from: sourcePath }} className="block">
             <div className="aspect-[4/5] overflow-hidden">
               <img src={product.src} alt={product.name} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
             </div>
@@ -607,12 +607,12 @@ function App() {
     </div>
   )
 
-  const CollectionPage = ({ title, items }) => (
+  const CollectionPage = ({ title, items, sourcePath }) => (
     <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
       <h2 className="text-3xl font-semibold text-[#3f1f34]">{title}</h2>
       <p className="mt-2 text-sm text-[#7d5d70]">Select any product card to open the product page.</p>
       <div className="mt-8">
-        <ProductGrid items={items} />
+        <ProductGrid items={items} sourcePath={sourcePath} />
       </div>
     </section>
   )
@@ -622,9 +622,18 @@ function App() {
     const product = productsForLookup.find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
     const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
+    const previousCollectionPath = location.state?.from
+    const isAccessoryProduct = product ? accessories.some((item) => item.id === product.id) : false
     const isNightwearProduct = product ? nightwear.some((item) => item.id === product.id) : false
-    const backPath = isNightwearProduct ? '/nightwear' : '/lingerie-sets'
-    const backLabel = isNightwearProduct ? 'Back to Nightwear' : 'Back to Lingerie Sets'
+    const isNewArrivalProduct = product ? newArrivals.some((item) => item.id === product.id) : false
+    const backPath = previousCollectionPath ?? (isAccessoryProduct ? '/accessories' : isNightwearProduct ? '/nightwear' : isNewArrivalProduct ? '/new-arrivals' : '/lingerie-sets')
+    const backLabelMap = {
+      '/accessories': 'Back to Accessories',
+      '/nightwear': 'Back to Nightwear',
+      '/new-arrivals': 'Back to New Arrivals',
+      '/lingerie-sets': 'Back to Lingerie Sets',
+    }
+    const backLabel = backLabelMap[backPath] ?? 'Back to Collection'
     const productGallery =
       product?.id === 40 && extraGalleryImageForSet40
         ? [...product.gallery, extraGalleryImageForSet40]
@@ -698,6 +707,9 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[#f9f5f7] text-[#2f1f2a]">
+      <div className="bg-[#7d2f56] px-6 py-2 text-center text-sm font-semibold text-white">
+        Free UK Standard delivery over 50 pound spend
+      </div>
       <header className="border-b border-[#e7d9e3] bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           <Link to="/" className="text-2xl font-semibold tracking-[0.18em] text-[#7f395b]">LACE & LUXE</Link>
@@ -751,7 +763,7 @@ function App() {
                   <h2 className="text-3xl font-semibold text-[#3f1f34]">Featured Lingerie Sets</h2>
                   <Link to="/lingerie-sets" className="text-sm font-semibold text-[#9a3d6c] hover:text-[#7d2f56]">View all products</Link>
                 </div>
-                <ProductGrid items={featuredProducts} />
+                <ProductGrid items={featuredProducts} sourcePath="/lingerie-sets" />
               </section>
 
               <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-3 lg:px-8">
@@ -760,18 +772,18 @@ function App() {
                 </article>
                 <article className="rounded-3xl bg-[#7d2f56] p-8 text-white">
                   <p className="text-xs uppercase tracking-[0.2em] text-[#f8d8ea]">Online Exclusive</p>
-                  <h3 className="mt-3 text-3xl font-semibold leading-tight">Buy 2 sets and get 20% off</h3>
-                  <p className="mt-4 text-sm leading-7 text-[#f3d6e6]">Build your own matching edit. Combine romantic essentials and statement pieces for every mood.</p>
-                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">Shop Offer</Link>
+                  <h3 className="mt-3 text-3xl font-semibold leading-tight">Sign up to emails and get 15% off on your first order</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#f3d6e6]">Sign up to emails and get 15% off on your first order.</p>
+                  <Link to="/checkout" className="mt-7 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">Sign Up</Link>
                 </article>
               </section>
             </>
           }
         />
-        <Route path="/new-arrivals" element={<CollectionPage title="New Arrivals" items={newArrivals} />} />
-        <Route path="/lingerie-sets" element={<CollectionPage title="Lingerie Sets" items={lingerieSets} />} />
-        <Route path="/nightwear" element={<CollectionPage title="Nightwear" items={nightwear} />} />
-        <Route path="/accessories" element={<CollectionPage title="Accessories" items={accessories} />} />
+        <Route path="/new-arrivals" element={<CollectionPage title="New Arrivals" items={newArrivals} sourcePath="/new-arrivals" />} />
+        <Route path="/lingerie-sets" element={<CollectionPage title="Lingerie Sets" items={lingerieSets} sourcePath="/lingerie-sets" />} />
+        <Route path="/nightwear" element={<CollectionPage title="Nightwear" items={nightwear} sourcePath="/nightwear" />} />
+        <Route path="/accessories" element={<CollectionPage title="Accessories" items={accessories} sourcePath="/accessories" />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route
           path="/bag"
