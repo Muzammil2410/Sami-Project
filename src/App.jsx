@@ -550,11 +550,30 @@ function App() {
   }, [newImageModules])
   const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts]
   const featuredProducts = products.slice(2, 10)
-  const lingerieSets = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
-  const newArrivals = lingerieSets.slice(0, Math.min(12, lingerieSets.length))
-  const nightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)].filter(
-    (item) => item.id !== 57,
+  const lingerieSets = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))].filter(
+    (item) => ![1, 54].includes(item.id),
   )
+  const newArrivals = lingerieSets.slice(0, Math.min(12, lingerieSets.length))
+  const nightwear = useMemo(() => {
+    const baseNightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)].filter(
+      (item) => item.id !== 57,
+    )
+
+    // Move set 1009 after set 1015 so it appears in the second row behind 1015.
+    const itemToMoveIndex = baseNightwear.findIndex((item) => item.id === 1009)
+    const targetIndex = baseNightwear.findIndex((item) => item.id === 1015)
+
+    if (itemToMoveIndex === -1 || targetIndex === -1) {
+      return baseNightwear
+    }
+
+    const reorderedNightwear = [...baseNightwear]
+    const [itemToMove] = reorderedNightwear.splice(itemToMoveIndex, 1)
+    const insertAfterIndex = reorderedNightwear.findIndex((item) => item.id === 1015)
+    reorderedNightwear.splice(insertAfterIndex + 1, 0, itemToMove)
+
+    return reorderedNightwear
+  }, [extraNightwearProducts, products])
   const accessories = products.filter((_, index) => index % 3 === 0).filter((item) => item.id !== 57)
   const checkoutProductId = Number(searchParams.get('product'))
   const checkoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
@@ -609,24 +628,24 @@ function App() {
   }, [location.pathname, location.search])
 
   const ProductGrid = ({ items, sourcePath }) => (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
       {items.map((product) => (
         <article key={product.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#efdfe8]">
           <Link to={`/product/${product.id}`} state={{ from: sourcePath }} className="block">
-            <div className="aspect-[4/5] overflow-hidden">
+            <div className="aspect-[3/4] overflow-hidden sm:aspect-[4/5]">
               <img src={product.src} alt={product.name} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
             </div>
           </Link>
-          <div className="p-4">
-            <p className="text-sm text-[#8f6580]">Bestseller</p>
-            <h3 className="mt-1 text-lg font-medium text-[#45253a]">{product.name}</h3>
-            <div className="mt-4 flex items-center justify-between gap-2">
+          <div className="p-2.5 sm:p-4">
+            <p className="text-[11px] uppercase tracking-wider text-[#8f6580] sm:text-sm sm:normal-case sm:tracking-normal">Bestseller</p>
+            <h3 className="mt-1 line-clamp-2 text-sm font-medium leading-snug text-[#45253a] sm:text-lg">{product.name}</h3>
+            <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-semibold">{product.price}</p>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => addToBag(product)} className="rounded-full border border-[#d8bfd0] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide hover:bg-[#fff0f7]">
+              <div className="flex gap-1.5 sm:gap-2">
+                <button type="button" onClick={() => addToBag(product)} className="rounded-full border border-[#d8bfd0] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:px-3 sm:text-xs">
                   Add
                 </button>
-                <button type="button" onClick={() => openCheckout(product)} className="rounded-full bg-[#7d2f56] px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-[#632242]">
+                <button type="button" onClick={() => openCheckout(product)} className="rounded-full bg-[#7d2f56] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:px-3 sm:text-xs">
                   Buy Now
                 </button>
               </div>
@@ -638,10 +657,10 @@ function App() {
   )
 
   const CollectionPage = ({ title, items, sourcePath }) => (
-    <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-      <h2 className="text-3xl font-semibold text-[#3f1f34]">{title}</h2>
+    <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">{title}</h2>
       <p className="mt-2 text-sm text-[#7d5d70]">Select any product card to open the product page.</p>
-      <div className="mt-8">
+      <div className="mt-5 sm:mt-8">
         <ProductGrid items={items} sourcePath={sourcePath} />
       </div>
     </section>
@@ -668,6 +687,13 @@ function App() {
       product?.id === 40 && extraGalleryImageForSet40
         ? [...product.gallery, extraGalleryImageForSet40]
         : product?.gallery ?? []
+    const hasSinglePieceOptions = showSetOfferNotice && productGallery.length > 1
+    const selectedSinglePiece = hasSinglePieceOptions && selectedPreview > 0
+    const activeProductPrice = selectedSinglePiece ? 'GBP 19.99' : product?.price ?? ''
+    const activeProductName =
+      selectedSinglePiece && product
+        ? `${product.name} - Single Piece ${selectedPreview}`
+        : product?.name ?? ''
 
     useEffect(() => {
       setSelectedPreview(0)
@@ -713,19 +739,60 @@ function App() {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Product Detail</p>
-            <h2 className="mt-3 text-4xl font-semibold text-[#3f1f34]">{product.name}</h2>
-            <p className="mt-4 text-xl font-semibold text-[#662845]">{product.price}</p>
+            <h2 className="mt-3 text-4xl font-semibold text-[#3f1f34]">{activeProductName}</h2>
+            <p className="mt-4 text-xl font-semibold text-[#662845]">{activeProductPrice}</p>
             <p className="mt-5 text-base leading-7 text-[#6e5362]">{product.description}</p>
             {showSetOfferNotice ? (
               <p className="mt-4 rounded-xl bg-[#f6e7ef] px-4 py-3 text-sm font-semibold text-[#7d2f56]">
-                Get 20% off if you get this whole set.
+                Love Story Set is shown first as the full set. You can also select single pieces from the options below.
               </p>
             ) : null}
+            {hasSinglePieceOptions ? (
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose View</p>
+                <div className="flex flex-wrap gap-2">
+                  {productGallery.map((_, index) => (
+                    <button
+                      key={`piece-option-${index}`}
+                      type="button"
+                      onClick={() => setSelectedPreview(index)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
+                        selectedPreview === index
+                          ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
+                          : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
+                      }`}
+                    >
+                      {index === 0 ? 'Full Set' : `Single Piece ${index}`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" onClick={() => addToBag(product)} className="rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7]">
+              <button
+                type="button"
+                onClick={() =>
+                  addToBag({
+                    ...product,
+                    name: activeProductName,
+                    price: activeProductPrice,
+                  })
+                }
+                className="rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7]"
+              >
                 Add to Bag
               </button>
-              <button type="button" onClick={() => openCheckout(product)} className="rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]">
+              <button
+                type="button"
+                onClick={() =>
+                  openCheckout({
+                    ...product,
+                    name: activeProductName,
+                    price: activeProductPrice,
+                  })
+                }
+                className="rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]"
+              >
                 Buy Now
               </button>
             </div>
@@ -763,6 +830,21 @@ function App() {
           path="/"
           element={
             <>
+              <section className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
+                <article className="rounded-3xl bg-gradient-to-r from-[#7d2f56] to-[#b14f7f] px-6 py-5 text-white shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f8d8ea]">Member Offer</p>
+                  <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">
+                    Sign up to emails and get 15% off on your first order
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-[#f7e4ee]">
+                    Join our email list for early access to new drops, exclusive promotions, and your welcome 15% discount on your first order.
+                  </p>
+                  <Link to="/checkout" className="mt-5 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">
+                    Sign Up Now
+                  </Link>
+                </article>
+              </section>
+
               <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-5 lg:px-8">
                 <article className="flex flex-col justify-center rounded-3xl bg-[#fff] p-8 shadow-sm ring-1 ring-[#f2e6ee] lg:col-span-3">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#b14f7f]">Spring Collection 2026</p>
@@ -802,9 +884,9 @@ function App() {
                 </article>
                 <article className="rounded-3xl bg-[#7d2f56] p-8 text-white">
                   <p className="text-xs uppercase tracking-[0.2em] text-[#f8d8ea]">Online Exclusive</p>
-                  <h3 className="mt-3 text-3xl font-semibold leading-tight">Sign up to emails and get 15% off on your first order</h3>
-                  <p className="mt-4 text-sm leading-7 text-[#f3d6e6]">Sign up to emails and get 15% off on your first order.</p>
-                  <Link to="/checkout" className="mt-7 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">Sign Up</Link>
+                  <h3 className="mt-3 text-3xl font-semibold leading-tight">Limited-Time Picks from Our Bestseller Edit</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#f3d6e6]">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
+                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">Shop Bestsellers</Link>
                 </article>
               </section>
             </>
