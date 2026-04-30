@@ -1039,8 +1039,22 @@ function App() {
 
   return (
     <main className="min-h-screen bg-[#f9f5f7] text-[#2f1f2a]">
-      <div className="bg-[#7d2f56] px-6 py-2 text-center text-sm font-semibold text-white">
-        Free worldwide delivery over £50 spend
+      <style>{`
+        @keyframes deliveryStripMarquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+      <div className="overflow-hidden bg-[#7d2f56] py-2 text-sm font-semibold text-white">
+        <div
+          className="flex w-max whitespace-nowrap"
+          style={{ animation: 'deliveryStripMarquee 18s linear infinite' }}
+        >
+          <span className="px-6">Free worldwide delivery over £50 spend</span>
+          <span className="px-6">Free worldwide delivery over £50 spend</span>
+          <span className="px-6">Free worldwide delivery over £50 spend</span>
+          <span className="px-6">Free worldwide delivery over £50 spend</span>
+        </div>
       </div>
       <header className="border-b border-[#e7d9e3] bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
