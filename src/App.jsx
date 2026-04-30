@@ -15,6 +15,26 @@ const dummyDescriptions = [
   'Crafted for flattering support using lightweight fabrics and adjustable comfort features.',
 ]
 
+const lingerieCircleProductNames = [
+  'Whispher Bodysuit',
+  'Bow Babydoll',
+  'Midnight Bloom',
+  'Luxe Set 41',
+  'Ivory Whispher Set',
+  'Bride Bloom Set',
+  'Desire Fringe Set',
+  'Love Spell Set',
+]
+const lingerieCircleExtraProductIds = [22, 27]
+
+const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit']
+const bodysuitsCircleExtraProductIds = [13]
+const sleepwearCircleProductNames = ['Blush Crush']
+const sleepwearCircleExtraProductIds = [47, 48, 49]
+const leatherCircleProductIds = [1205, 1206, 1207, 1208, 1209, 1210, 1211]
+const wrapSetCircleProductNames = ['Komple setler']
+const fullBodySetCircleProductIds = [1008, 1009, 1021]
+
 const groupedProductSets = [
   [3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 53],
   [9, 10, 11, 12],
@@ -40,8 +60,10 @@ const productOverrides = {
   36: { name: 'Blush Crush', price: '£29.99' },
   40: { name: 'Bow Babydoll', price: '£34.99' },
   43: { name: 'Whispher Bodyysuit', price: '£34.99' },
+  47: { name: 'Loce Affair dress', price: '34.99£' },
   48: { name: 'French Kiss Maid Set', price: '£34.99' },
   49: { name: 'French Kiss Maid Set', price: '£34.99' },
+  55: { name: 'Ethereal Sheer Slip dress', price: '34.99£' },
   1001: { name: 'Bride Bloom Set', price: '£39.99' },
   1002: { name: 'Bride Bloom Set', price: '£39.99' },
   1003: { name: 'Love Spell Set', price: '£19.99' },
@@ -56,6 +78,14 @@ const productOverrides = {
 const applyProductOverride = (product) => {
   const override = productOverrides[product.id]
   return override ? { ...product, ...override } : product
+}
+
+const brandWordmarkStyle = {
+  fontFamily: '"Playfair Display", "Times New Roman", Georgia, serif',
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  textShadow: '0 1px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(125,47,86,0.25)',
 }
 
 function App() {
@@ -141,27 +171,29 @@ function App() {
           )
         : combinedProducts
 
-    return productsWithSet54.map((product) => {
-      if (product.id === 49 && product.gallery.length >= 2) {
-        const displayImage = product.gallery[product.gallery.length - 1]
-        const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
+    return productsWithSet54
+      .map((product) => {
+        if (product.id === 49 && product.gallery.length >= 2) {
+          const displayImage = product.gallery[product.gallery.length - 1]
+          const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
 
-        return applyProductOverride({
-          ...product,
-          src: displayImage,
-          gallery: reorderedGallery,
-        })
-      }
+          return applyProductOverride({
+            ...product,
+            src: displayImage,
+            gallery: reorderedGallery,
+          })
+        }
 
-      if (product.id === 55 && imageQ && imageT && imageS) {
-        return applyProductOverride({
-          ...product,
-          gallery: [product.src, imageQ.src, imageT.src, imageS.src],
-        })
-      }
+        if (product.id === 55 && imageQ && imageT && imageS) {
+          return applyProductOverride({
+            ...product,
+            gallery: [product.src, imageQ.src, imageT.src, imageS.src],
+          })
+        }
 
-      return applyProductOverride(product)
-    })
+        return applyProductOverride(product)
+      })
+      .filter((product) => ![1, 56].includes(product.id))
   }, [imageModules])
 
   const heroImage = products[0]?.src
@@ -173,6 +205,10 @@ function App() {
         fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
         src,
       }))
+    const findNewImageByNames = (...possibleNames) => {
+      const normalizedTargets = possibleNames.map((name) => name.toLowerCase().replace(/\s+/g, ''))
+      return newImages.find((item) => normalizedTargets.includes(item.fileName.replace(/\s+/g, '')))
+    }
 
     const imageA = newImages.find((item) => item.fileName === 'a')
     const imageB = newImages.find((item) => item.fileName === 'b')
@@ -190,6 +226,28 @@ function App() {
     const imageLL = newImages.find((item) => item.fileName === 'll')
     const imageAA = newImages.find((item) => item.fileName === 'aa')
     const imageBB = newImages.find((item) => item.fileName === 'bb')
+    const imageM11 = newImages.find((item) => item.fileName === 'm1 (1)')
+    const imageM12 = newImages.find((item) => item.fileName === 'm1 (2)')
+    const imageM13 = newImages.find((item) => item.fileName === 'm1 (3)')
+    const imageM14 = newImages.find((item) => item.fileName === 'm1 (4)')
+    const imageM21 = newImages.find((item) => item.fileName === 'm2 (1)')
+    const imageM22 = newImages.find((item) => item.fileName === 'm2 (2)')
+    const imageM23 = newImages.find((item) => item.fileName === 'm2 (3)')
+    const imageM24 = newImages.find((item) => item.fileName === 'm2 (4)')
+    const imageM25 = newImages.find((item) => item.fileName === 'm2 (5)')
+    const imageM3 = newImages.find((item) => item.fileName === 'm3')
+    const imageM4 = newImages.find((item) => item.fileName === 'm4')
+    const imageM51 = findNewImageByNames('m5 (1)', 'm5(1)')
+    const imageM52 = findNewImageByNames('m5 (2)', 'm5(2)')
+    const imageM53 = findNewImageByNames('m5 (3)', 'm5(3)')
+    const imageM54 = findNewImageByNames('m5 (4)', 'm5(4)')
+    const imageM55 = findNewImageByNames('m5 (5)', 'm5(5)')
+    const imageM56 = findNewImageByNames('m5 (6)', 'm5(6)')
+    const imageM57 = findNewImageByNames('m5 (7)', 'm5(7)')
+    const imageM58 = findNewImageByNames('m5 (8)', 'm5(8)')
+    const imageM59 = findNewImageByNames('m5 (9)', 'm5(9)')
+    const imageM510 = findNewImageByNames('m5 (10)', 'm5(10)')
+    const imageM511 = findNewImageByNames('m5 (11)', 'm5(11)')
 
     const customProducts = []
 
@@ -272,6 +330,66 @@ function App() {
             : 'Single product preview for Luxe Set 1007.',
       })
     }
+
+    if (imageM11 && imageM12 && imageM13 && imageM14) {
+      customProducts.push({
+        id: 1101,
+        src: imageM14.src,
+        gallery: [imageM14.src, imageM13.src, imageM11.src, imageM12.src],
+        name: 'Desire Fringe Set',
+        price: '34.99£',
+        description: 'Combined product gallery for Desire Fringe Set. Scroll through 4 preview images for full product angles.',
+      })
+    }
+
+    if (imageM21 && imageM22 && imageM23 && imageM24 && imageM25) {
+      customProducts.push({
+        id: 1102,
+        src: imageM21.src,
+        gallery: [imageM21.src, imageM22.src, imageM23.src],
+        name: 'Komple setler',
+        price: '750TL+KDV',
+        description: 'Combined product gallery for Komple setler. Scroll through 3 preview images for full product angles.',
+      })
+    }
+
+    if (imageM3 && imageM4) {
+      customProducts.push({
+        id: 1103,
+        src: imageM3.src,
+        gallery: [imageM3.src, imageM4.src],
+        name: 'Komple setler',
+        price: '750TL+KDV',
+        description: 'Combined product gallery for Komple setler. Scroll through 2 preview images for full product angles.',
+      })
+    }
+
+    if (imageM51 && imageM52 && imageM53 && imageM54) {
+      customProducts.push({
+        id: 1104,
+        src: imageM52.src,
+        gallery: [imageM51.src, imageM52.src, imageM54.src],
+        name: 'Komple setler',
+        price: '750TL+KDV',
+        description: 'Combined product gallery for Komple setler. Scroll through 3 preview images for full product angles.',
+      })
+    }
+
+    const leatherSingles = [imageM55, imageM56, imageM57, imageM58, imageM59, imageM510, imageM511]
+    leatherSingles.forEach((image, index) => {
+      if (!image) {
+        return
+      }
+
+      customProducts.push({
+        id: 1205 + index,
+        src: image.src,
+        gallery: [image.src],
+        name: 'Women Harness',
+        price: '34.99£',
+        description: 'Single product preview for Women Harness.',
+      })
+    })
 
     return customProducts.map(applyProductOverride)
   }, [newImageModules])
@@ -549,26 +667,125 @@ function App() {
     return customNightwear.map(applyProductOverride)
   }, [newImageModules])
   const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts]
+  const lingerieCircleProducts = useMemo(() => {
+    const selectedByNameProducts = lingerieCircleProductNames
+      .map((targetName) => productsForLookup.find((product) => product.name === targetName))
+      .filter(Boolean)
+    const selectedByIdProducts = [...lingerieCircleExtraProductIds, 55]
+      .map((targetId) => productsForLookup.find((product) => product.id === targetId))
+      .filter(Boolean)
+    const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
+
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const lingerieCircleProductIds = useMemo(
+    () => new Set(lingerieCircleProducts.map((product) => product.id)),
+    [lingerieCircleProducts],
+  )
+  const bodysuitsCircleProducts = useMemo(() => {
+    const selectedByNameProducts = bodysuitsCircleProductNames
+      .map((targetName) => productsForLookup.find((product) => product.name === targetName))
+      .filter(Boolean)
+    const selectedByIdProducts = bodysuitsCircleExtraProductIds
+      .map((targetId) => productsForLookup.find((product) => product.id === targetId))
+      .filter(Boolean)
+    const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
+
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const bodysuitsCircleProductIds = useMemo(
+    () => new Set(bodysuitsCircleProducts.map((product) => product.id)),
+    [bodysuitsCircleProducts],
+  )
+  const sleepwearCircleProducts = useMemo(() => {
+    const selectedByNameProducts = sleepwearCircleProductNames
+      .map((targetName) => productsForLookup.find((product) => product.name === targetName))
+      .filter(Boolean)
+    const selectedByIdProducts = sleepwearCircleExtraProductIds
+      .map((targetId) => productsForLookup.find((product) => product.id === targetId))
+      .filter(Boolean)
+    const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
+
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const leatherCircleProducts = useMemo(() => {
+    const selectedProducts = leatherCircleProductIds
+      .map((targetId) => productsForLookup.find((product) => product.id === targetId))
+      .filter(Boolean)
+
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const wrapSetCircleProducts = useMemo(() => {
+    const selectedProducts = productsForLookup.filter((product) => wrapSetCircleProductNames.includes(product.name))
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const fullBodySetCircleProducts = useMemo(() => {
+    const selectedProducts = fullBodySetCircleProductIds
+      .map((targetId) => productsForLookup.find((product) => product.id === targetId))
+      .filter(Boolean)
+    const uniqueProducts = selectedProducts.filter(
+      (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
+    )
+
+    return uniqueProducts
+  }, [productsForLookup])
+  const heroCircleExcludedProductIds = useMemo(() => {
+    const mergedIds = new Set([
+      ...lingerieCircleProductIds,
+      ...bodysuitsCircleProductIds,
+      ...leatherCircleProducts.map((item) => item.id),
+      ...fullBodySetCircleProducts.map((item) => item.id),
+    ])
+    return mergedIds
+  }, [lingerieCircleProductIds, bodysuitsCircleProductIds, leatherCircleProducts, fullBodySetCircleProducts])
   const heroCategoryCards = [
-    { label: 'Lingerie', productId: 9, sourcePath: '/lingerie-sets' },
-    { label: 'Sex Toys', productId: 36, sourcePath: '/accessories' },
-    { label: 'Erotic Lingerie', productId: 43, sourcePath: '/lingerie-sets' },
-    { label: 'Nightwear', productId: 1008, sourcePath: '/nightwear' },
-    { label: 'Bondage', productId: 22, sourcePath: '/accessories' },
-    { label: 'Swimwear', productId: 27, sourcePath: '/new-arrivals' },
+    { label: 'Bodysuits', productId: 2, sourcePath: '/bodysuits', to: '/bodysuits' },
+    { label: 'Lingerie', productId: 1007, sourcePath: '/lingerie-sets', to: '/lingerie-sets' },
+    { label: 'Leather', productId: 1205, sourcePath: '/leather', to: '/leather' },
+    { label: 'Sleepwear', productId: 36, sourcePath: '/sleepwear', to: '/sleepwear' },
+    { label: 'Wrap set', productId: 1102, sourcePath: '/wrap-set', to: '/wrap-set' },
+    { label: 'Full body set', productId: 1008, sourcePath: '/full-body-set', to: '/full-body-set' },
   ].map((item) => ({
     ...item,
     image: productsForLookup.find((product) => product.id === item.productId)?.src ?? heroImage,
   }))
-  const featuredProducts = products.slice(2, 10)
-  const lingerieSets = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))].filter(
-    (item) => ![1, 54].includes(item.id),
-  )
-  const newArrivals = lingerieSets.slice(0, Math.min(12, lingerieSets.length))
+  const featuredProducts = products
+    .slice(2, 10)
+    .filter((item) => !heroCircleExcludedProductIds.has(item.id))
+  const bodysuits = bodysuitsCircleProducts
+  const sleepwear = sleepwearCircleProducts
+  const leather = leatherCircleProducts
+  const wrapSet = wrapSetCircleProducts
+  const fullBodySet = fullBodySetCircleProducts
+  const lingerieSets = lingerieCircleProducts
+  const newArrivals = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
+    .filter((item) => ![1, 54].includes(item.id))
+    .filter((item) => !heroCircleExcludedProductIds.has(item.id))
+    .slice(0, Math.min(12, products.length))
   const nightwear = useMemo(() => {
-    const baseNightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)].filter(
-      (item) => item.id !== 57,
-    )
+    const baseNightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)]
+      .filter((item) => item.id !== 57)
+      .filter((item) => !heroCircleExcludedProductIds.has(item.id))
 
     // Move set 1009 after set 1015 so it appears in the second row behind 1015.
     const itemToMoveIndex = baseNightwear.findIndex((item) => item.id === 1009)
@@ -584,8 +801,11 @@ function App() {
     reorderedNightwear.splice(insertAfterIndex + 1, 0, itemToMove)
 
     return reorderedNightwear
-  }, [extraNightwearProducts, products])
-  const accessories = products.filter((_, index) => index % 3 === 0).filter((item) => item.id !== 57)
+  }, [extraNightwearProducts, products, heroCircleExcludedProductIds])
+  const accessories = products
+    .filter((_, index) => index % 3 === 0)
+    .filter((item) => item.id !== 57)
+    .filter((item) => !heroCircleExcludedProductIds.has(item.id))
   const checkoutProductId = Number(searchParams.get('product'))
   const checkoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
   const extraGalleryImageForSet40 = useMemo(() => {
@@ -690,6 +910,10 @@ function App() {
     const backLabelMap = {
       '/accessories': 'Back to Accessories',
       '/nightwear': 'Back to Nightwear',
+      '/sleepwear': 'Back to Sleepwear',
+      '/leather': 'Back to Leather',
+      '/wrap-set': 'Back to Wrap set',
+      '/full-body-set': 'Back to Full body set',
       '/new-arrivals': 'Back to New Arrivals',
       '/lingerie-sets': 'Back to Lingerie Sets',
     }
@@ -816,11 +1040,11 @@ function App() {
   return (
     <main className="min-h-screen bg-[#f9f5f7] text-[#2f1f2a]">
       <div className="bg-[#7d2f56] px-6 py-2 text-center text-sm font-semibold text-white">
-        Free UK Standard delivery over £50 spend
+        Free worldwide delivery over £50 spend
       </div>
       <header className="border-b border-[#e7d9e3] bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <Link to="/" className="text-2xl font-semibold tracking-[0.18em] text-[#7f395b]">Hush Sweety</Link>
+          <Link to="/" className="text-2xl text-[#7f395b]" style={brandWordmarkStyle}>Hush Sweety</Link>
           <nav className="hidden gap-8 text-sm font-medium md:flex">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} className={({ isActive }) => `transition hover:text-[#bb4d7f] ${isActive ? 'text-[#7d2f56]' : ''}`}>
@@ -859,7 +1083,7 @@ function App() {
               <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-5 lg:px-8">
                 <article className="flex flex-col justify-center rounded-3xl bg-[#fff] p-8 shadow-sm ring-1 ring-[#f2e6ee] lg:col-span-3">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#b14f7f]">Spring Collection 2026</p>
-                  <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#3f1f34] sm:text-5xl">Elegant intimatewear designed for confidence.</h1>
+                  <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#3f1f34] sm:text-5xl"></h1>
                   <p className="mt-5 max-w-lg text-base leading-7 text-[#755368]">Discover curated lingerie sets, soft mesh layers, and timeless silhouettes inspired by modern boutique styling.</p>
                   <div className="mt-8 flex flex-wrap gap-3">
                     <Link to="/lingerie-sets" className="rounded-full bg-[#7d2f56] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6e284b]">Shop Lingerie Sets</Link>
@@ -871,7 +1095,7 @@ function App() {
                     {heroCategoryCards.map((item) => (
                       <Link
                         key={item.label}
-                        to={`/product/${item.productId}?from=${encodeURIComponent(item.sourcePath)}`}
+                        to={item.to ?? `/product/${item.productId}?from=${encodeURIComponent(item.sourcePath)}`}
                         state={{ from: item.sourcePath }}
                         className="flex flex-col items-center text-center"
                       >
@@ -918,6 +1142,11 @@ function App() {
           }
         />
         <Route path="/new-arrivals" element={<CollectionPage title="New Arrivals" items={newArrivals} sourcePath="/new-arrivals" />} />
+        <Route path="/bodysuits" element={<CollectionPage title="Bodysuits" items={bodysuits} sourcePath="/bodysuits" />} />
+        <Route path="/sleepwear" element={<CollectionPage title="Sleepwear" items={sleepwear} sourcePath="/sleepwear" />} />
+        <Route path="/leather" element={<CollectionPage title="Leather" items={leather} sourcePath="/leather" />} />
+        <Route path="/wrap-set" element={<CollectionPage title="Wrap set" items={wrapSet} sourcePath="/wrap-set" />} />
+        <Route path="/full-body-set" element={<CollectionPage title="Full body set" items={fullBodySet} sourcePath="/full-body-set" />} />
         <Route path="/lingerie-sets" element={<CollectionPage title="Lingerie Sets" items={lingerieSets} sourcePath="/lingerie-sets" />} />
         <Route path="/nightwear" element={<CollectionPage title="Nightwear" items={nightwear} sourcePath="/nightwear" />} />
         <Route path="/accessories" element={<CollectionPage title="Accessories" items={accessories} sourcePath="/accessories" />} />
@@ -1031,7 +1260,7 @@ function App() {
       <footer className="mt-8 border-t border-[#e7d9e3] bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           <div>
-            <Link to="/" className="text-lg font-semibold text-[#7f395b]">Hush Sweety</Link>
+            <Link to="/" className="text-lg text-[#7f395b]" style={brandWordmarkStyle}>Hush Sweety</Link>
             <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns across the UK.</p>
           </div>
           <div>
@@ -1050,14 +1279,28 @@ function App() {
               <Link to="/checkout" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Contact Us</Link>
             </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">Stay in Touch</p>
-            <div className="mt-3 flex overflow-hidden rounded-full border border-[#dbc5d2]">
-              <input type="email" placeholder="Email address" className="w-full px-4 py-2 text-sm outline-none placeholder:text-[#a17f93]" />
-              <button type="button" onClick={() => setNotice('Thanks for joining our newsletter.')} className="bg-[#7d2f56] px-4 text-xs font-semibold uppercase tracking-wider text-white">
-                Join
+          <div className="rounded-2xl bg-[#fff6fa] p-4 ring-1 ring-[#efd8e4]">
+            <p className="text-2xl font-semibold text-[#4f2e40]">Stay in the loop</p>
+            <p className="mt-2 text-sm leading-6 text-[#7b5a6e]">
+              Sign up to be the first to hear about new arrivals, exclusive offers, and upcoming drops.
+            </p>
+            <div className="mt-4 space-y-2">
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full rounded-md border border-[#d8bfd0] bg-white px-3 py-2.5 text-sm outline-none placeholder:text-[#a17f93] focus:border-[#b9638c]"
+              />
+              <button
+                type="button"
+                onClick={() => setNotice('Thanks for subscribing. You are now in the loop.')}
+                className="w-full rounded-md bg-[#f6c9dd] px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-[#5a2f45] transition hover:bg-[#efb8d1]"
+              >
+                Subscribe
               </button>
             </div>
+            <p className="mt-3 text-xs leading-5 text-[#8a6b7d]">
+              See our full Terms and Conditions, Privacy and Cookie Policy to find out more.
+            </p>
           </div>
         </div>
       </footer>
