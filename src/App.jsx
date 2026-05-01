@@ -27,11 +27,15 @@ const lingerieCircleProductNames = [
 ]
 const lingerieCircleExtraProductIds = [22, 27]
 const midnightBloomVariantIds = [19, 22, 27]
+const bowLuxeVariantIds = [40, 41]
+const bowLuxeSwatchColors = ['#000000', '#dc2626']
 
 const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit']
-const bodysuitsCircleExtraProductIds = [13]
+const bodysuitsCircleExtraProductIds = [13, 43]
 const sleepwearCircleProductNames = ['Blush Crush']
 const sleepwearCircleExtraProductIds = [47, 48, 49]
+const sleepwearFringeVariantIds = [48, 49]
+const sleepwearFringeSwatchColors = ['#000000', '#dc2626']
 const leatherCircleProductIds = [1206, 1207, 1208, 1209]
 const wrapSetCircleProductNames = ['Komple setler']
 const fullBodySetCircleProductIds = [1008, 1009, 1021]
@@ -61,7 +65,7 @@ const productOverrides = {
   27: { name: 'Midnight Bloom', price: '£29.99' },
   36: { name: 'Blush Crush', price: '£29.99' },
   40: { name: 'Bow Babydoll', price: '£34.99' },
-  43: { name: 'Whispher Bodyysuit', price: '£34.99' },
+  43: { name: 'Whispher Bodysuit', price: '£34.99' },
   47: { name: 'Loce Affair dress', price: '34.99£' },
   48: { name: 'French Kiss Maid Set', price: '£34.99' },
   49: { name: 'French Kiss Maid Set', price: '£34.99' },
@@ -702,20 +706,46 @@ function App() {
             description: 'Choose your preferred color and preview each Midnight Bloom variation.',
           }
         : null
+    const bowLuxeVariants = bowLuxeVariantIds
+      .map((variantId) => productsForLookup.find((product) => product.id === variantId))
+      .filter(Boolean)
+    const bowLuxeCombinedProduct =
+      bowLuxeVariants.length > 0
+        ? {
+            ...bowLuxeVariants[0],
+            id: 40041,
+            src: bowLuxeVariants[0].src,
+            gallery: bowLuxeVariants[0].gallery,
+            name: 'Bow Babydoll',
+            price: bowLuxeVariants[0].price,
+            colorOptions: bowLuxeVariants.map((item, index) => ({
+              id: item.id,
+              label: index === 0 ? 'Black' : 'Red',
+              image: item.src,
+              gallery: item.gallery,
+              swatchColor: bowLuxeSwatchColors[index] ?? '#d8bfd0',
+            })),
+            description: 'Choose Black or Red and preview the full image sequence for each style.',
+          }
+        : null
 
-    const filteredProducts = selectedProducts.filter((product) => !midnightBloomVariantIds.includes(product.id))
-    const productsWithCombinedMidnightBloom = midnightBloomCombinedProduct
-      ? [...filteredProducts, midnightBloomCombinedProduct]
-      : filteredProducts
+    const filteredProducts = selectedProducts.filter(
+      (product) => !midnightBloomVariantIds.includes(product.id) && !bowLuxeVariantIds.includes(product.id),
+    )
+    const productsWithCombinedVariants = [
+      ...filteredProducts,
+      ...(midnightBloomCombinedProduct ? [midnightBloomCombinedProduct] : []),
+      ...(bowLuxeCombinedProduct ? [bowLuxeCombinedProduct] : []),
+    ]
 
-    const uniqueProducts = productsWithCombinedMidnightBloom.filter(
+    const uniqueProducts = productsWithCombinedVariants.filter(
       (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
     )
 
     return uniqueProducts
   }, [productsForLookup])
   const lingerieCircleProductIds = useMemo(
-    () => new Set([...lingerieCircleProducts.map((product) => product.id), ...midnightBloomVariantIds]),
+    () => new Set([...lingerieCircleProducts.map((product) => product.id), ...midnightBloomVariantIds, ...bowLuxeVariantIds]),
     [lingerieCircleProducts],
   )
   const bodysuitsCircleProducts = useMemo(() => {
@@ -745,8 +775,42 @@ function App() {
       .map((targetId) => productsForLookup.find((product) => product.id === targetId))
       .filter(Boolean)
     const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
+    const sleepwearFringeVariants = sleepwearFringeVariantIds
+      .map((variantId) => productsForLookup.find((product) => product.id === variantId))
+      .filter(Boolean)
+    const sleepwearFringeCombinedProduct =
+      sleepwearFringeVariants.length > 0
+        ? {
+            ...sleepwearFringeVariants[0],
+            id: 48049,
+            src: sleepwearFringeVariants[0].src,
+            gallery: sleepwearFringeVariants[0].gallery,
+            name: sleepwearFringeVariants[0].name,
+            price: sleepwearFringeVariants[0].price,
+            colorOptions: sleepwearFringeVariants.map((item, index) => {
+              const fallbackSequence = sleepwearFringeVariants
+                .flatMap((variant) => variant.gallery ?? [variant.src])
+                .filter(Boolean)
+              const variantPrimarySequence = item.gallery?.length ? item.gallery : [item.src]
+              const mergedSequence = [...variantPrimarySequence, ...fallbackSequence]
+              const uniqueSequence = [...new Set(mergedSequence)]
 
-    const uniqueProducts = selectedProducts.filter(
+              return {
+                id: item.id,
+                label: index === 0 ? 'Black' : 'Red',
+                image: item.src,
+                gallery: uniqueSequence,
+                swatchColor: sleepwearFringeSwatchColors[index] ?? '#d8bfd0',
+              }
+            }),
+          }
+        : null
+    const filteredProducts = selectedProducts.filter((product) => !sleepwearFringeVariantIds.includes(product.id))
+    const productsWithCombinedFringe = sleepwearFringeCombinedProduct
+      ? [...filteredProducts, sleepwearFringeCombinedProduct]
+      : filteredProducts
+
+    const uniqueProducts = productsWithCombinedFringe.filter(
       (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
     )
 
@@ -801,15 +865,13 @@ function App() {
     ...item,
     image: productsForLookup.find((product) => product.id === item.productId)?.src ?? heroImage,
   }))
-  const featuredProducts = products
-    .slice(2, 10)
-    .filter((item) => !heroCircleExcludedProductIds.has(item.id))
   const bodysuits = bodysuitsCircleProducts
   const sleepwear = sleepwearCircleProducts
   const leather = leatherCircleProducts
   const wrapSet = wrapSetCircleProducts
   const fullBodySet = fullBodySetCircleProducts
   const lingerieSets = lingerieCircleProducts
+  const featuredProducts = lingerieSets.slice(0, Math.min(6, lingerieSets.length))
   const newArrivals = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
     .filter((item) => ![1, 54].includes(item.id))
     .filter((item) => !heroCircleExcludedProductIds.has(item.id))
@@ -931,7 +993,7 @@ function App() {
 
   const ProductDetailsPage = () => {
     const { id } = useParams()
-    const product = [...productsForLookup, ...lingerieCircleProducts].find((item) => item.id === Number(id))
+    const product = [...productsForLookup, ...lingerieCircleProducts, ...sleepwearCircleProducts].find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
     const [selectedColorIndex, setSelectedColorIndex] = useState(0)
     const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
@@ -968,6 +1030,11 @@ function App() {
       selectedSinglePiece && product
         ? `${product.name} - Single Piece ${selectedPreview}`
         : product?.name ?? ''
+    const shouldHideAutoDescription =
+      typeof product?.description === 'string' &&
+      (product.description.startsWith('Combined product gallery for') ||
+        product.description.startsWith('Single product preview for'))
+    const visibleProductDescription = shouldHideAutoDescription ? '' : product?.description ?? ''
 
     useEffect(() => {
       setSelectedPreview(0)
@@ -1016,7 +1083,9 @@ function App() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Product Detail</p>
             <h2 className="mt-3 break-words text-2xl font-semibold leading-tight text-[#3f1f34] sm:text-4xl">{activeProductName}</h2>
             <p className="mt-3 text-lg font-semibold text-[#662845] sm:mt-4 sm:text-xl">{activeProductPrice}</p>
-            <p className="mt-4 text-sm leading-7 text-[#6e5362] sm:mt-5 sm:text-base">{product.description}</p>
+            {visibleProductDescription ? (
+              <p className="mt-4 text-sm leading-7 text-[#6e5362] sm:mt-5 sm:text-base">{visibleProductDescription}</p>
+            ) : null}
             {colorOptions.length > 0 ? (
               <div className="mt-4">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Color</p>
