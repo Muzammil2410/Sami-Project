@@ -26,14 +26,16 @@ const lingerieCircleProductNames = [
   'Love Spell Set',
 ]
 const lingerieCircleExtraProductIds = [22, 27]
+const midnightBloomVariantIds = [19, 22, 27]
 
 const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit']
 const bodysuitsCircleExtraProductIds = [13]
 const sleepwearCircleProductNames = ['Blush Crush']
 const sleepwearCircleExtraProductIds = [47, 48, 49]
-const leatherCircleProductIds = [1205, 1206, 1207, 1208, 1209, 1210, 1211]
+const leatherCircleProductIds = [1206, 1207, 1208, 1209]
 const wrapSetCircleProductNames = ['Komple setler']
 const fullBodySetCircleProductIds = [1008, 1009, 1021]
+const midnightBloomSwatchColors = ['#000000', '#16a34a', '#dc2626']
 
 const groupedProductSets = [
   [3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 53],
@@ -391,7 +393,9 @@ function App() {
       })
     })
 
-    return customProducts.map(applyProductOverride)
+    return customProducts
+      .map(applyProductOverride)
+      .filter((product) => ![1205, 1210, 1211].includes(product.id))
   }, [newImageModules])
   const extraNightwearProducts = useMemo(() => {
     const newImages = Object.entries(newImageModules)
@@ -675,15 +679,43 @@ function App() {
       .map((targetId) => productsForLookup.find((product) => product.id === targetId))
       .filter(Boolean)
     const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
+    const midnightBloomVariants = midnightBloomVariantIds
+      .map((variantId) => productsForLookup.find((product) => product.id === variantId))
+      .filter(Boolean)
 
-    const uniqueProducts = selectedProducts.filter(
+    const midnightBloomCombinedProduct =
+      midnightBloomVariants.length > 0
+        ? {
+            ...midnightBloomVariants[0],
+            id: 19027,
+            src: midnightBloomVariants[0].src,
+            gallery: midnightBloomVariants.map((item) => item.src),
+            name: 'Midnight Bloom',
+            price: midnightBloomVariants[0].price,
+            colorOptions: midnightBloomVariants.map((item, index) => ({
+              id: item.id,
+              label: `Color ${index + 1}`,
+              image: item.src,
+              gallery: item.gallery,
+              swatchColor: midnightBloomSwatchColors[index] ?? '#d8bfd0',
+            })),
+            description: 'Choose your preferred color and preview each Midnight Bloom variation.',
+          }
+        : null
+
+    const filteredProducts = selectedProducts.filter((product) => !midnightBloomVariantIds.includes(product.id))
+    const productsWithCombinedMidnightBloom = midnightBloomCombinedProduct
+      ? [...filteredProducts, midnightBloomCombinedProduct]
+      : filteredProducts
+
+    const uniqueProducts = productsWithCombinedMidnightBloom.filter(
       (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
     )
 
     return uniqueProducts
   }, [productsForLookup])
   const lingerieCircleProductIds = useMemo(
-    () => new Set(lingerieCircleProducts.map((product) => product.id)),
+    () => new Set([...lingerieCircleProducts.map((product) => product.id), ...midnightBloomVariantIds]),
     [lingerieCircleProducts],
   )
   const bodysuitsCircleProducts = useMemo(() => {
@@ -761,7 +793,7 @@ function App() {
   const heroCategoryCards = [
     { label: 'Bodysuits', productId: 2, sourcePath: '/bodysuits', to: '/bodysuits' },
     { label: 'Lingerie', productId: 1007, sourcePath: '/lingerie-sets', to: '/lingerie-sets' },
-    { label: 'Leather', productId: 1205, sourcePath: '/leather', to: '/leather' },
+    { label: 'Leather', productId: 1206, sourcePath: '/leather', to: '/leather' },
     { label: 'Sleepwear', productId: 36, sourcePath: '/sleepwear', to: '/sleepwear' },
     { label: 'Wrap set', productId: 1102, sourcePath: '/wrap-set', to: '/wrap-set' },
     { label: 'Full body set', productId: 1008, sourcePath: '/full-body-set', to: '/full-body-set' },
@@ -899,8 +931,9 @@ function App() {
 
   const ProductDetailsPage = () => {
     const { id } = useParams()
-    const product = productsForLookup.find((item) => item.id === Number(id))
+    const product = [...productsForLookup, ...lingerieCircleProducts].find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
+    const [selectedColorIndex, setSelectedColorIndex] = useState(0)
     const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
     const previousCollectionPath = location.state?.from
     const isAccessoryProduct = product ? accessories.some((item) => item.id === product.id) : false
@@ -918,10 +951,16 @@ function App() {
       '/lingerie-sets': 'Back to Lingerie Sets',
     }
     const backLabel = backLabelMap[backPath] ?? 'Back to Collection'
-    const productGallery =
+    const baseProductGallery =
       product?.id === 40 && extraGalleryImageForSet40
         ? [...product.gallery, extraGalleryImageForSet40]
         : product?.gallery ?? []
+    const colorOptions = Array.isArray(product?.colorOptions) ? product.colorOptions : []
+    const selectedColorGallery =
+      colorOptions.length > 0 && Array.isArray(colorOptions[selectedColorIndex]?.gallery)
+        ? colorOptions[selectedColorIndex].gallery
+        : null
+    const productGallery = selectedColorGallery && selectedColorGallery.length > 0 ? selectedColorGallery : baseProductGallery
     const hasSinglePieceOptions = showSetOfferNotice && productGallery.length > 1
     const selectedSinglePiece = hasSinglePieceOptions && selectedPreview > 0
     const activeProductPrice = selectedSinglePiece ? '£19.99' : product?.price ?? ''
@@ -932,6 +971,7 @@ function App() {
 
     useEffect(() => {
       setSelectedPreview(0)
+      setSelectedColorIndex(0)
     }, [id])
 
     if (!product) {
@@ -946,16 +986,16 @@ function App() {
     }
 
     return (
-      <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Link to={backPath} className="mb-6 inline-block rounded-full border border-[#dcc5d1] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-white">
           {backLabel}
         </Link>
-        <article className="grid gap-8 rounded-3xl bg-white p-6 ring-1 ring-[#ead9e4] md:grid-cols-2 md:p-8">
+        <article className="grid gap-5 rounded-3xl bg-white p-4 ring-1 ring-[#ead9e4] sm:gap-8 sm:p-6 md:grid-cols-2 md:p-8">
           <div>
             <img
               src={productGallery[selectedPreview] ?? product.src}
               alt={product.name}
-              className="h-full w-full rounded-2xl object-cover"
+              className="aspect-[4/5] w-full rounded-2xl object-cover"
             />
             {productGallery.length > 1 ? (
               <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
@@ -964,7 +1004,7 @@ function App() {
                     key={preview}
                     type="button"
                     onClick={() => setSelectedPreview(index)}
-                    className={`h-20 w-16 shrink-0 overflow-hidden rounded-lg border ${selectedPreview === index ? 'border-[#7d2f56]' : 'border-[#dcc5d1]'}`}
+                    className={`h-16 w-12 shrink-0 overflow-hidden rounded-lg border sm:h-20 sm:w-16 ${selectedPreview === index ? 'border-[#7d2f56]' : 'border-[#dcc5d1]'}`}
                   >
                     <img src={preview} alt={`${product.name} preview ${index + 1}`} className="h-full w-full object-cover" />
                   </button>
@@ -972,11 +1012,35 @@ function App() {
               </div>
             ) : null}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Product Detail</p>
-            <h2 className="mt-3 text-4xl font-semibold text-[#3f1f34]">{activeProductName}</h2>
-            <p className="mt-4 text-xl font-semibold text-[#662845]">{activeProductPrice}</p>
-            <p className="mt-5 text-base leading-7 text-[#6e5362]">{product.description}</p>
+            <h2 className="mt-3 break-words text-2xl font-semibold leading-tight text-[#3f1f34] sm:text-4xl">{activeProductName}</h2>
+            <p className="mt-3 text-lg font-semibold text-[#662845] sm:mt-4 sm:text-xl">{activeProductPrice}</p>
+            <p className="mt-4 text-sm leading-7 text-[#6e5362] sm:mt-5 sm:text-base">{product.description}</p>
+            {colorOptions.length > 0 ? (
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Color</p>
+                <div className="flex flex-wrap gap-2">
+                  {colorOptions.map((option, index) => (
+                    <button
+                      key={`color-option-${option.id}`}
+                      type="button"
+                      onClick={() => {
+                        setSelectedColorIndex(index)
+                        setSelectedPreview(0)
+                      }}
+                      aria-label={option.label}
+                      className={`h-8 w-8 rounded-full border-2 ${selectedColorIndex === index ? 'border-[#7d2f56]' : 'border-[#d8bfd0]'}`}
+                    >
+                      <span
+                        className="block h-full w-full rounded-full"
+                        style={{ backgroundColor: option.swatchColor ?? '#d8bfd0' }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {showSetOfferNotice ? (
               <p className="mt-4 rounded-xl bg-[#f6e7ef] px-4 py-3 text-sm font-semibold text-[#7d2f56]">
                 Love Story Set is shown first as the full set. You can also select single pieces from the options below.
@@ -1003,7 +1067,7 @@ function App() {
                 </div>
               </div>
             ) : null}
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
               <button
                 type="button"
                 onClick={() =>
@@ -1013,7 +1077,7 @@ function App() {
                     price: activeProductPrice,
                   })
                 }
-                className="rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7]"
+                className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
               >
                 Add to Bag
               </button>
@@ -1026,7 +1090,7 @@ function App() {
                     price: activeProductPrice,
                   })
                 }
-                className="rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]"
+                className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
               >
                 Buy Now
               </button>
