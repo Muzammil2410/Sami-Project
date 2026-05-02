@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 const navItems = [
-  { label: 'New Arrivals', to: '/new-arrivals' },
-  { label: 'Lingerie Sets', to: '/lingerie-sets' },
-  { label: 'Nightwear', to: '/nightwear' },
-  { label: 'Accessories', to: '/accessories' },
+  { label: 'SHOP', to: '/lingerie-sets' },
+  { label: 'COLLECTIONS', to: '/new-arrivals' },
+  { label: 'ABOUT US', to: '/' },
+  { label: 'CONTACT', to: '/' },
 ]
 
 const dummyDescriptions = [
@@ -24,20 +24,21 @@ const lingerieCircleProductNames = [
   'Bride Bloom Set',
   'Desire Fringe Set',
   'Love Spell Set',
+  'Sculpt Bodysuit',
 ]
-const lingerieCircleExtraProductIds = [22, 27]
+const lingerieCircleExtraProductIds = [22, 27, 1312, 1313]
 const midnightBloomVariantIds = [19, 22, 27]
 const bowLuxeVariantIds = [40, 41]
 const bowLuxeSwatchColors = ['#000000', '#dc2626']
 
-const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit']
-const bodysuitsCircleExtraProductIds = [13, 43]
+const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit', 'Love Affair Dress']
+const bodysuitsCircleExtraProductIds = [13, 43, 1004]
 const sleepwearCircleProductNames = ['Blush Crush']
 const sleepwearCircleExtraProductIds = [47, 48, 49]
 const sleepwearFringeVariantIds = [48, 49]
 const sleepwearFringeSwatchColors = ['#000000', '#dc2626']
 const leatherCircleProductIds = [1206, 1207, 1208, 1209]
-const wrapSetCircleProductNames = ['Komple setler']
+const wrapSetCircleProductNames = ['Wrap set']
 const fullBodySetCircleProductIds = [1008, 1009, 1021]
 const midnightBloomSwatchColors = ['#000000', '#16a34a', '#dc2626']
 
@@ -74,7 +75,7 @@ const productOverrides = {
   1002: { name: 'Bride Bloom Set', price: '£39.99' },
   1003: { name: 'Love Spell Set', price: '£19.99' },
   1005: { name: 'Love Lace Set', price: '£19.99' },
-  1006: { name: 'sculptBodysuit', price: '£24.99' },
+  1006: { name: 'Sculpt Bodysuit', price: '£24.99' },
   1007: { name: 'Whispher Bodysuit', price: '£34.99' },
   1008: { name: 'Love Story Set', price: '£64.99' },
   1009: { name: 'Love Story Set', price: '£64.99' },
@@ -100,6 +101,12 @@ function App() {
   const [searchParams] = useSearchParams()
   const imageModules = import.meta.glob('./assets/images/*.jpeg', { eager: true, import: 'default' })
   const newImageModules = import.meta.glob('./assets/new/*.jpeg', { eager: true, import: 'default' })
+  const newVideoModules = {
+    ...import.meta.glob('./assets/new/*.MP4', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/new/*.MOV', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/new/*.mp4', { eager: true, import: 'default' }),
+    ...import.meta.glob('./assets/new/*.mov', { eager: true, import: 'default' }),
+  }
   const videoModules = {
     ...import.meta.glob('./assets/images/*.MP4', { eager: true, import: 'default' }),
     ...import.meta.glob('./assets/images/*.MOV', { eager: true, import: 'default' }),
@@ -108,6 +115,9 @@ function App() {
   }
   const [bagItems, setBagItems] = useState([])
   const [notice, setNotice] = useState('')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [customerData, setCustomerData] = useState({
     fullName: '',
     email: '',
@@ -162,6 +172,16 @@ function App() {
     const imageQ = rawProducts.find((item) => item.fileName === 'q')
     const imageT = rawProducts.find((item) => item.fileName === 't')
     const imageS = rawProducts.find((item) => item.fileName === 's')
+    const newImages = Object.entries(newImageModules)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([path, src]) => ({
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+        src,
+      }))
+    const findNewImageByNames = (...possibleNames) => {
+      const normalizedTargets = possibleNames.map((name) => name.toLowerCase().replace(/\s+/g, ''))
+      return newImages.find((item) => normalizedTargets.includes(item.fileName.replace(/\s+/g, '')))
+    }
 
     const productsWithSet54 =
       imageR && imageQ && imageT && imageS
@@ -179,6 +199,123 @@ function App() {
 
     return productsWithSet54
       .map((product) => {
+        if (product.id === 9) {
+          const blackSequence = product.gallery
+          const whiteSequence = [
+            findNewImageByNames('a1(31)', 'a1 (31)')?.src,
+            findNewImageByNames('a1(32)', 'a1 (32)')?.src,
+            findNewImageByNames('a1(33)', 'a1 (33)')?.src,
+            findNewImageByNames('a1(35)', 'a1 (35)')?.src,
+          ].filter(Boolean)
+          const redSequence = [
+            findNewImageByNames('a1(40)', 'a1 (40)')?.src,
+            findNewImageByNames('a1(34)', 'a1 (34)')?.src,
+            findNewImageByNames('a1(38)', 'a1 (38)')?.src,
+            findNewImageByNames('a1(39)', 'a1 (39)')?.src,
+          ].filter(Boolean)
+
+          return applyProductOverride({
+            ...product,
+            colorOptions: [
+              {
+                id: 901,
+                label: 'Black',
+                image: blackSequence[0],
+                gallery: blackSequence,
+                swatchColor: '#000000',
+              },
+              ...(whiteSequence.length > 0
+                ? [
+                    {
+                      id: 902,
+                      label: 'White',
+                      image: whiteSequence[0],
+                      gallery: whiteSequence,
+                      swatchColor: '#ffffff',
+                    },
+                  ]
+                : []),
+              ...(redSequence.length > 0
+                ? [
+                    {
+                      id: 903,
+                      label: 'Red',
+                      image: redSequence[0],
+                      gallery: redSequence,
+                      swatchColor: '#dc2626',
+                    },
+                  ]
+                : []),
+            ],
+          })
+        }
+
+        if (product.id === 13) {
+          const blackSequence = product.gallery
+          const redSequence = [
+            findNewImageByNames('a1(72)', 'a1 (72)')?.src,
+            findNewImageByNames('a1(70)', 'a1 (70)')?.src,
+            findNewImageByNames('a1(68)', 'a1 (68)')?.src,
+            findNewImageByNames('a1(71)', 'a1 (71)')?.src,
+          ].filter(Boolean)
+          const whiteSequence = [
+            findNewImageByNames('a1(61)', 'a1 (61)')?.src,
+            findNewImageByNames('a1(62)', 'a1 (62)')?.src,
+            findNewImageByNames('a1(63)', 'a1 (63)')?.src,
+            findNewImageByNames('a1(64)', 'a1 (64)')?.src,
+            findNewImageByNames('a1(65)', 'a1 (65)')?.src,
+            findNewImageByNames('a1(66)', 'a1 (66)')?.src,
+            findNewImageByNames('a1(67)', 'a1 (67)')?.src,
+            findNewImageByNames('a1(69)', 'a1 (69)')?.src,
+          ].filter(Boolean)
+
+          return applyProductOverride({
+            ...product,
+            colorOptions: [
+              {
+                id: 1301,
+                label: 'Black',
+                image: blackSequence[0],
+                gallery: blackSequence,
+                swatchColor: '#000000',
+              },
+              ...(redSequence.length > 0
+                ? [
+                    {
+                      id: 1302,
+                      label: 'Red',
+                      image: redSequence[0],
+                      gallery: redSequence,
+                      swatchColor: '#dc2626',
+                    },
+                  ]
+                : []),
+              ...(whiteSequence.length > 0
+                ? [
+                    {
+                      id: 1303,
+                      label: 'White',
+                      image: whiteSequence[0],
+                      gallery: whiteSequence,
+                      swatchColor: '#ffffff',
+                    },
+                  ]
+                : []),
+            ],
+          })
+        }
+
+        if (product.id === 19) {
+          const pic2 = findNewImageByNames('a1(29)', 'a1 (29)')
+          const newGallery = [...product.gallery]
+          if (pic2) newGallery.push(pic2.src)
+          
+          return applyProductOverride({
+            ...product,
+            gallery: newGallery,
+          })
+        }
+
         if (product.id === 49 && product.gallery.length >= 2) {
           const displayImage = product.gallery[product.gallery.length - 1]
           const reorderedGallery = [...product.gallery.slice(1), product.gallery[0]]
@@ -191,16 +328,62 @@ function App() {
         }
 
         if (product.id === 55 && imageQ && imageT && imageS) {
+          const redSequence = [product.src, imageQ.src, imageT.src, imageS.src]
+          const blackSequence = [
+            findNewImageByNames('a1(16)', 'a1 (16)')?.src,
+            findNewImageByNames('a1(17)', 'a1 (17)')?.src,
+            findNewImageByNames('a1(15)', 'a1 (15)')?.src,
+            findNewImageByNames('a1(18)', 'a1 (18)')?.src,
+          ].filter(Boolean)
+          const whiteSequence = [
+            findNewImageByNames('a1(23)', 'a1 (23)')?.src,
+            findNewImageByNames('a1(20)', 'a1 (20)')?.src,
+            findNewImageByNames('a1(21)', 'a1 (21)')?.src,
+            findNewImageByNames('a1(19)', 'a1 (19)')?.src,
+            findNewImageByNames('a1(25)', 'a1 (25)')?.src,
+          ].filter(Boolean)
+
           return applyProductOverride({
             ...product,
-            gallery: [product.src, imageQ.src, imageT.src, imageS.src],
+            gallery: redSequence,
+            colorOptions: [
+              {
+                id: 5501,
+                label: 'Red',
+                image: redSequence[0],
+                gallery: redSequence,
+                swatchColor: '#dc2626',
+              },
+              ...(blackSequence.length > 0
+                ? [
+                    {
+                      id: 5502,
+                      label: 'Black',
+                      image: blackSequence[0],
+                      gallery: blackSequence,
+                      swatchColor: '#000000',
+                    },
+                  ]
+                : []),
+              ...(whiteSequence.length > 0
+                ? [
+                    {
+                      id: 5503,
+                      label: 'White',
+                      image: whiteSequence[0],
+                      gallery: whiteSequence,
+                      swatchColor: '#ffffff',
+                    },
+                  ]
+                : []),
+            ],
           })
         }
 
         return applyProductOverride(product)
       })
       .filter((product) => ![1, 56].includes(product.id))
-  }, [imageModules])
+  }, [imageModules, newImageModules])
 
   const heroImage = products[0]?.src
   const featureImage = products[1]?.src
@@ -254,17 +437,38 @@ function App() {
     const imageM59 = findNewImageByNames('m5 (9)', 'm5(9)')
     const imageM510 = findNewImageByNames('m5 (10)', 'm5(10)')
     const imageM511 = findNewImageByNames('m5 (11)', 'm5(11)')
+    const imageA21 = findNewImageByNames('a2 (1)', 'a2(1)')
+    const imageA22 = findNewImageByNames('a2 (2)', 'a2(2)')
 
     const customProducts = []
 
     if (imageA && imageB) {
+      const whiteGallery = [imageA.src, imageB.src]
+      const pinkGallery = (imageA21 && imageA22) ? [imageA21.src, imageA22.src] : []
+
       customProducts.push({
         id: 1001,
         src: imageA.src,
-        gallery: [imageA.src, imageB.src],
+        gallery: whiteGallery,
         name: 'Luxe Set 1001',
         price: '£39.00',
-        description: 'Combined product gallery for Luxe Set 1001. Scroll through 2 preview images for full product angles.',
+        description: 'Choose your preferred color and preview each variation.',
+        colorOptions: [
+          {
+            id: 100101,
+            label: 'White',
+            image: whiteGallery[0],
+            gallery: whiteGallery,
+            swatchColor: '#ffffff',
+          },
+          ...(pinkGallery.length > 0 ? [{
+            id: 100102,
+            label: 'Pink',
+            image: pinkGallery[0],
+            gallery: pinkGallery,
+            swatchColor: '#ffb6c1',
+          }] : [])
+        ]
       })
     }
 
@@ -295,9 +499,9 @@ function App() {
         id: 1004,
         src: imageF.src,
         gallery: [imageF.src],
-        name: 'Luxe Set 1004',
-        price: '£37.00',
-        description: 'Single product preview for Luxe Set 1004.',
+        name: 'Obsidian Harness Set',
+        price: '£39.99',
+        description: 'Single product preview for Obsidian Harness Set.',
       })
     }
 
@@ -312,14 +516,50 @@ function App() {
       })
     }
 
-    if (imageOO) {
+    const imageA2 = findNewImageByNames('a2')
+    const imageA23 = findNewImageByNames('a2 (3)', 'a2(3)')
+    const imageA24 = findNewImageByNames('a2 (4)', 'a2(4)')
+    const imageA25 = findNewImageByNames('a2 (5)', 'a2(5)')
+    const imageA26 = findNewImageByNames('a2 (6)', 'a2(6)')
+    const imageA27 = findNewImageByNames('a2 (7)', 'a2(7)')
+    const imageA28 = findNewImageByNames('a2 (8)', 'a2(8)')
+
+    const blackSculpt = imageA2 ? [imageA2.src] : []
+    const redSculpt = (imageA23 && imageA24 && imageA25 && imageA26) ? [imageA23.src, imageA24.src, imageA25.src, imageA26.src] : []
+    const whiteSculpt = (imageA27 && imageA28) ? [imageA27.src, imageA28.src] : []
+    const defaultSculptSequence = blackSculpt.length > 0 ? blackSculpt : (redSculpt.length > 0 ? redSculpt : (whiteSculpt.length > 0 ? whiteSculpt : (imageOO ? [imageOO.src] : [])))
+
+    if (defaultSculptSequence.length > 0) {
       customProducts.push({
         id: 1006,
-        src: imageOO.src,
-        gallery: [imageOO.src],
-        name: 'Luxe Set 1006',
-        price: '£38.00',
-        description: 'Single product preview for Luxe Set 1006.',
+        src: defaultSculptSequence[0],
+        gallery: defaultSculptSequence,
+        name: 'Sculpt Bodysuit',
+        price: '£24.99',
+        description: 'Choose your preferred color and preview each variation.',
+        colorOptions: [
+          ...(blackSculpt.length > 0 ? [{
+            id: 100601,
+            label: 'Black',
+            image: blackSculpt[0],
+            gallery: blackSculpt,
+            swatchColor: '#000000',
+          }] : []),
+          ...(redSculpt.length > 0 ? [{
+            id: 100602,
+            label: 'Red',
+            image: redSculpt[0],
+            gallery: redSculpt,
+            swatchColor: '#dc2626',
+          }] : []),
+          ...(whiteSculpt.length > 0 ? [{
+            id: 100603,
+            label: 'White',
+            image: whiteSculpt[0],
+            gallery: whiteSculpt,
+            swatchColor: '#ffffff',
+          }] : [])
+        ]
       })
     }
 
@@ -348,36 +588,145 @@ function App() {
       })
     }
 
+    const imageA1_41 = findNewImageByNames('a1(41)', 'a1 (41)')
+    const imageA1_42 = findNewImageByNames('a1(42)', 'a1 (42)')
+    const imageA1_43 = findNewImageByNames('a1(43)', 'a1 (43)')
+    const imageA1_44 = findNewImageByNames('a1(44)', 'a1 (44)')
+    const imageA1_45 = findNewImageByNames('a1(45)', 'a1 (45)')
+    const imageA1_46 = findNewImageByNames('a1(46)', 'a1 (46)')
+    const imageA1_47 = findNewImageByNames('a1(47)', 'a1 (47)')
+    const imageA1_48 = findNewImageByNames('a1(48)', 'a1 (48)')
+    const imageA1_49 = findNewImageByNames('a1(49)', 'a1 (49)')
+    const imageA1_50 = findNewImageByNames('a1(50)', 'a1 (50)')
+    const imageA1_51 = findNewImageByNames('a1(51)', 'a1 (51)')
+    const imageA1_52 = findNewImageByNames('a1(52)', 'a1 (52)')
+    const imageA1_53 = findNewImageByNames('a1(53)', 'a1 (53)')
+
+    const pinkGallery1312 = [imageA1_46, imageA1_42, imageA1_50].filter(Boolean).map(img => img.src)
+    const redGallery1312 = [imageA1_44, imageA1_45, imageA1_51, imageA1_52].filter(Boolean).map(img => img.src)
+    const greenGallery1312 = [imageA1_53, imageA1_49].filter(Boolean).map(img => img.src)
+    const lightBlueGallery1312 = [imageA1_41, imageA1_47, imageA1_48].filter(Boolean).map(img => img.src)
+    const defaultGallery1312 = lightBlueGallery1312.length > 0 ? lightBlueGallery1312 : (pinkGallery1312.length > 0 ? pinkGallery1312 : (redGallery1312.length > 0 ? redGallery1312 : (greenGallery1312.length > 0 ? greenGallery1312 : [])))
+
+    if (defaultGallery1312.length > 0) {
+      customProducts.push({
+        id: 1312,
+        src: defaultGallery1312[0],
+        gallery: defaultGallery1312,
+        name: 'Love Lace Set',
+        price: '£19.99',
+        description: 'Choose your preferred color and preview each variation.',
+        colorOptions: [
+          ...(lightBlueGallery1312.length > 0 ? [{
+            id: 131201,
+            label: 'Light Blue',
+            image: lightBlueGallery1312[0],
+            gallery: lightBlueGallery1312,
+            swatchColor: '#add8e6',
+          }] : []),
+          ...(pinkGallery1312.length > 0 ? [{
+            id: 131202,
+            label: 'Pink',
+            image: pinkGallery1312[0],
+            gallery: pinkGallery1312,
+            swatchColor: '#ffb6c1',
+          }] : []),
+          ...(redGallery1312.length > 0 ? [{
+            id: 131203,
+            label: 'Red',
+            image: redGallery1312[0],
+            gallery: redGallery1312,
+            swatchColor: '#dc2626',
+          }] : []),
+          ...(greenGallery1312.length > 0 ? [{
+            id: 131204,
+            label: 'Green',
+            image: greenGallery1312[0],
+            gallery: greenGallery1312,
+            swatchColor: '#22c55e',
+          }] : [])
+        ]
+      })
+    }
+
+    const imageA1_54 = findNewImageByNames('a1(54)', 'a1 (54)')
+    const imageA1_55 = findNewImageByNames('a1(55)', 'a1 (55)')
+    const imageA1_56 = findNewImageByNames('a1(56)', 'a1 (56)')
+    const imageA1_57 = findNewImageByNames('a1(57)', 'a1 (57)')
+    const imageA1_58 = findNewImageByNames('a1(58)', 'a1 (58)')
+    const imageA1_59 = findNewImageByNames('a1(59)', 'a1 (59)')
+    const imageA1_60 = findNewImageByNames('a1(60)', 'a1 (60)')
+    const imageA1_22 = findNewImageByNames('a1(22)', 'a1 (22)')
+    const imageA1_24 = findNewImageByNames('a1(24)', 'a1 (24)')
+    const imageA1_26 = findNewImageByNames('a1(26)', 'a1 (26)')
+    const imageA1_28 = findNewImageByNames('a1(28)', 'a1 (28)')
+
+    const redGallery1313 = [imageA1_54, imageA1_55, imageA1_56, imageA1_57, imageA1_58, imageA1_59, imageA1_60].filter(Boolean).map(img => img.src)
+    const blackGallery1313 = [imageA1_22, imageA1_24, imageA1_26, imageA1_28].filter(Boolean).map(img => img.src)
+    const defaultGallery1313 = redGallery1313.length > 0 ? redGallery1313 : (blackGallery1313.length > 0 ? blackGallery1313 : [])
+
+    if (defaultGallery1313.length > 0) {
+      customProducts.push({
+        id: 1313,
+        src: defaultGallery1313[0],
+        gallery: defaultGallery1313,
+        name: 'The Showpiece Basque',
+        price: '£34.99',
+        description: 'Choose your preferred color and preview each variation.',
+        colorOptions: [
+          ...(redGallery1313.length > 0 ? [{
+            id: 131301,
+            label: 'Red',
+            image: redGallery1313[0],
+            gallery: redGallery1313,
+            swatchColor: '#dc2626',
+          }] : []),
+          ...(blackGallery1313.length > 0 ? [{
+            id: 131302,
+            label: 'Black',
+            image: blackGallery1313[0],
+            gallery: blackGallery1313,
+            swatchColor: '#000000',
+          }] : [])
+        ]
+      })
+    }
+
     if (imageM21 && imageM22 && imageM23 && imageM24 && imageM25) {
+      const blackGallery = [imageM21.src, imageM22.src, imageM23.src];
+      const pinkGallery = (imageM3 && imageM4) ? [imageM3.src, imageM4.src] : [];
+      const redGallery = (imageM51 && imageM52 && imageM53 && imageM54) ? [imageM51.src, imageM52.src, imageM54.src] : [];
+
       customProducts.push({
         id: 1102,
         src: imageM21.src,
-        gallery: [imageM21.src, imageM22.src, imageM23.src],
-        name: 'Komple setler',
-        price: '750TL+KDV',
-        description: 'Combined product gallery for Komple setler. Scroll through 3 preview images for full product angles.',
-      })
-    }
-
-    if (imageM3 && imageM4) {
-      customProducts.push({
-        id: 1103,
-        src: imageM3.src,
-        gallery: [imageM3.src, imageM4.src],
-        name: 'Komple setler',
-        price: '750TL+KDV',
-        description: 'Combined product gallery for Komple setler. Scroll through 2 preview images for full product angles.',
-      })
-    }
-
-    if (imageM51 && imageM52 && imageM53 && imageM54) {
-      customProducts.push({
-        id: 1104,
-        src: imageM52.src,
-        gallery: [imageM51.src, imageM52.src, imageM54.src],
-        name: 'Komple setler',
-        price: '750TL+KDV',
-        description: 'Combined product gallery for Komple setler. Scroll through 3 preview images for full product angles.',
+        gallery: blackGallery,
+        name: 'Wrap set',
+        price: '£30.00',
+        description: 'Choose your preferred color and preview each Wrap set variation.',
+        colorOptions: [
+          {
+            id: 110201,
+            label: 'Black',
+            image: blackGallery[0],
+            gallery: blackGallery,
+            swatchColor: '#000000',
+          },
+          ...(pinkGallery.length > 0 ? [{
+            id: 110202,
+            label: 'Pink',
+            image: pinkGallery[0],
+            gallery: pinkGallery,
+            swatchColor: '#ffb6c1',
+          }] : []),
+          ...(redGallery.length > 0 ? [{
+            id: 110203,
+            label: 'Red',
+            image: redGallery[0],
+            gallery: redGallery,
+            swatchColor: '#dc2626',
+          }] : [])
+        ]
       })
     }
 
@@ -674,7 +1023,60 @@ function App() {
 
     return customNightwear.map(applyProductOverride)
   }, [newImageModules])
-  const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts]
+
+  const customLoveAffairDress = useMemo(() => {
+    const newImages = Object.entries(newImageModules)
+      .map(([path, src]) => ({
+        fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+        src,
+      }))
+    const findNewImageByNames = (...possibleNames) => {
+      const normalizedTargets = possibleNames.map((name) => name.toLowerCase().replace(/\s+/g, ''))
+      return newImages.find((item) => normalizedTargets.includes(item.fileName.replace(/\s+/g, '')))
+    }
+
+    const laBlack = [
+      findNewImageByNames('a1(1)', 'a1 (1)')?.src,
+      findNewImageByNames('a1(3)', 'a1 (3)')?.src,
+      findNewImageByNames('a1(5)', 'a1 (5)')?.src,
+      findNewImageByNames('a1(79)', 'a1 (79)')?.src,
+    ].filter(Boolean)
+
+    const laRed = [
+      findNewImageByNames('a1(11)', 'a1 (11)')?.src,
+      findNewImageByNames('a1(12)', 'a1 (12)')?.src,
+      findNewImageByNames('a1(13)', 'a1 (13)')?.src,
+      findNewImageByNames('a1(14)', 'a1 (14)')?.src,
+      findNewImageByNames('a1(9)', 'a1 (9)')?.src,
+    ].filter(Boolean)
+
+    const laWhite = [
+      findNewImageByNames('a1(2)', 'a1 (2)')?.src,
+      findNewImageByNames('a1(4)', 'a1 (4)')?.src,
+      findNewImageByNames('a1(6)', 'a1 (6)')?.src,
+      findNewImageByNames('a1(8)', 'a1 (8)')?.src,
+      findNewImageByNames('a1(10)', 'a1 (10)')?.src,
+      findNewImageByNames('a1(7)', 'a1 (7)')?.src,
+    ].filter(Boolean)
+
+    const defaultSequence = laRed.length ? laRed : (laWhite.length ? laWhite : (laBlack.length ? laBlack : []))
+
+    return {
+      id: 1310,
+      src: defaultSequence[0] || '',
+      gallery: defaultSequence,
+      name: 'Love Affair Dress',
+      price: '34.99£',
+      colorOptions: [
+        ...(laRed.length > 0 ? [{ id: 13101, label: 'Red', image: laRed[0], gallery: laRed, swatchColor: '#dc2626' }] : []),
+        ...(laWhite.length > 0 ? [{ id: 13102, label: 'White', image: laWhite[0], gallery: laWhite, swatchColor: '#ffffff' }] : []),
+        ...(laBlack.length > 0 ? [{ id: 13103, label: 'Black', image: laBlack[0], gallery: laBlack, swatchColor: '#000000' }] : []),
+      ],
+      description: 'Choose your preferred color and preview each Love Affair Dress variation.',
+    }
+  }, [newImageModules])
+
+  const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts, customLoveAffairDress]
   const lingerieCircleProducts = useMemo(() => {
     const selectedByNameProducts = lingerieCircleProductNames
       .map((targetName) => productsForLookup.find((product) => product.name === targetName))
@@ -931,6 +1333,23 @@ function App() {
     },
     [videoModules],
   )
+  const heroSectionVideo = useMemo(() => {
+    const videoEntries = Object.entries(newVideoModules)
+    const preferredNames = ['video1', 'v3']
+
+    for (const preferredName of preferredNames) {
+      const preferredVideo = videoEntries.find(([path]) => {
+        const normalizedPath = path.toLowerCase().replace(/\\/g, '/')
+        return normalizedPath.includes(`/${preferredName}.`)
+      })
+
+      if (preferredVideo) {
+        return preferredVideo[1]
+      }
+    }
+
+    return videoEntries[0]?.[1] ?? null
+  }, [newVideoModules])
 
   const addToBag = (product) => {
     setBagItems((prev) => [...prev, product])
@@ -951,6 +1370,11 @@ function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
   }, [location.pathname, location.search])
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset'
+    return () => { document.body.style.overflow = 'unset' }
+  }, [isMobileMenuOpen])
 
   const ProductGrid = ({ items, sourcePath }) => (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
@@ -990,6 +1414,35 @@ function App() {
       </div>
     </section>
   )
+  const SearchPage = () => {
+    const q = searchParams.get('q') ?? ''
+    const results = useMemo(() => {
+      if (!q.trim()) return []
+      const term = q.toLowerCase()
+      const allSearchable = [...productsForLookup, ...lingerieCircleProducts, ...sleepwearCircleProducts]
+      const uniqueItems = allSearchable.filter((item, index, self) => self.findIndex(t => t.id === item.id) === index)
+      return uniqueItems.filter(item => 
+        item.name.toLowerCase().includes(term) ||
+        (item.description && item.description.toLowerCase().includes(term))
+      )
+    }, [q, productsForLookup, lingerieCircleProducts, sleepwearCircleProducts])
+
+    return (
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 min-h-[50vh]">
+        <h2 className="text-2xl font-semibold text-[#111] uppercase tracking-wider mb-2">Search Results</h2>
+        <p className="text-sm text-gray-500 mb-8 tracking-wide">Showing results for "{q}"</p>
+        
+        {results.length > 0 ? (
+          <ProductGrid items={results} sourcePath={`/search?q=${encodeURIComponent(q)}`} />
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-lg text-gray-500">No products found matching your search.</p>
+            <Link to="/lingerie-sets" className="inline-block mt-6 px-6 py-3 bg-black text-white text-sm font-semibold uppercase tracking-wider rounded transition-colors hover:bg-gray-800">Shop Collection</Link>
+          </div>
+        )}
+      </section>
+    )
+  }
 
   const ProductDetailsPage = () => {
     const { id } = useParams()
@@ -1144,6 +1597,8 @@ function App() {
                     ...product,
                     name: activeProductName,
                     price: activeProductPrice,
+                    src: productGallery[0],
+                    selectedColor: colorOptions[selectedColorIndex]?.label
                   })
                 }
                 className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
@@ -1157,6 +1612,8 @@ function App() {
                     ...product,
                     name: activeProductName,
                     price: activeProductPrice,
+                    src: productGallery[0],
+                    selectedColor: colorOptions[selectedColorIndex]?.label
                   })
                 }
                 className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
@@ -1189,19 +1646,94 @@ function App() {
           <span className="px-6">Free worldwide delivery over £50 spend</span>
         </div>
       </div>
-      <header className="border-b border-[#e7d9e3] bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-          <Link to="/" className="text-2xl text-[#7f395b]" style={brandWordmarkStyle}>Hush Sweety</Link>
-          <nav className="hidden gap-8 text-sm font-medium md:flex">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => `transition hover:text-[#bb4d7f] ${isActive ? 'text-[#7d2f56]' : ''}`}>
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <Link to="/bag" className="rounded-full border border-[#d8c0cf] px-4 py-2 text-xs font-semibold uppercase tracking-wider transition hover:bg-[#fff0f7]">
-            My Bag ({bagItems.length})
-          </Link>
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 relative">
+          <div className="flex flex-1 items-center gap-5">
+            <button type="button" onClick={() => setIsMobileMenuOpen(true)}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <button type="button" className="hover:opacity-70" onClick={() => { setIsSearchOpen(!isSearchOpen); setTimeout(() => document.getElementById('searchInput')?.focus(), 100); }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
+          <div className="flex flex-1 justify-center">
+            <Link to="/" className="text-xl md:text-2xl text-[#111] whitespace-nowrap" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
+          </div>
+          <div className="flex flex-1 justify-end items-center gap-5 text-[#111]">
+            <Link to="/bag" className="relative flex items-center hover:opacity-70">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="2.5 6 21.5 6 19 16 5 16 2.5 6"></polyline>
+                <path d="M8 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
+                <path d="M16 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
+              </svg>
+              {bagItems.length > 0 && <span className="absolute -top-1.5 -right-2 bg-[#111] text-white rounded-full w-[16px] h-[16px] flex items-center justify-center text-[10px] font-bold">{bagItems.length}</span>}
+            </Link>
+          </div>
+
+          {isSearchOpen && (
+            <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-sm flex items-center gap-3 z-40">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input 
+                id="searchInput"
+                type="text" 
+                placeholder="Search products..." 
+                className="flex-1 outline-none text-[#111] text-sm tracking-wide bg-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsSearchOpen(false)
+                    navigate(`/search?q=${encodeURIComponent(searchQuery)}`)
+                  }
+                }}
+              />
+              <button type="button" onClick={() => setIsSearchOpen(false)} className="text-[#111] hover:opacity-70">
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
+        )}
+        
+        <div className={`fixed top-0 left-0 h-full w-[85%] sm:w-[400px] z-50 flex flex-col bg-white overflow-y-auto transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="flex items-center justify-between px-6 py-5 bg-[#eaf1f4]">
+              <Link to="/" className="text-xl text-[#111]" style={brandWordmarkStyle} onClick={() => setIsMobileMenuOpen(false)}>Hush Sweety</Link>
+              <button type="button" className="p-1" onClick={() => setIsMobileMenuOpen(false)}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 px-6 py-10 flex flex-col bg-white">
+              <div className="flex flex-col gap-8 text-[14px] tracking-wider font-normal uppercase text-[#111]">
+                {navItems.map((item) => (
+                  <Link key={item.label} to={item.to} className="flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
+                    {item.label}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </Link>
+                ))}
+              </div>
+              
+              <div className="mt-auto pt-10">
+                <div className="mb-6 border-t border-gray-200"></div>
+                <p className="text-[12px] mb-4 font-normal uppercase text-[#111]">Free Worldwide Shipping</p>
+                <Link to="/lingerie-sets" onClick={() => setIsMobileMenuOpen(false)} className="block w-full bg-black text-white text-center py-3 text-[13px] font-semibold uppercase tracking-wider rounded mb-8 hover:bg-gray-800 transition-colors">
+                  Shop Bestsellers
+                </Link>
+                <div className="space-y-6 pb-2">
+                  <a href="#" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    INSTAGRAM
+                  </a>
+                  <a href="#" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    FACEBOOK
+                  </a>
+                </div>
+              </div>
+            </div>
         </div>
       </header>
 
@@ -1231,11 +1763,20 @@ function App() {
                 <article className="flex flex-col justify-center rounded-3xl bg-[#fff] p-8 shadow-sm ring-1 ring-[#f2e6ee] lg:col-span-3">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#b14f7f]">Spring Collection 2026</p>
                   <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#3f1f34] sm:text-5xl"></h1>
-                  <p className="mt-5 max-w-lg text-base leading-7 text-[#755368]">Discover curated lingerie sets, soft mesh layers, and timeless silhouettes inspired by modern boutique styling.</p>
-                  <div className="mt-8 flex flex-wrap gap-3">
-                    <Link to="/lingerie-sets" className="rounded-full bg-[#7d2f56] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#6e284b]">Shop Lingerie Sets</Link>
-                    <Link to="/new-arrivals" className="rounded-full border border-[#d6bccb] px-6 py-3 text-sm font-semibold transition hover:bg-[#fff0f7]">View Bestsellers</Link>
-                  </div>
+                  {heroSectionVideo ? (
+                    <div className="mt-5 overflow-hidden rounded-2xl ring-1 ring-[#ead9e4]">
+                      <video
+                        src={heroSectionVideo}
+                        className="h-[320px] w-full object-cover sm:h-[420px]"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        controls
+                        preload="metadata"
+                      />
+                    </div>
+                  ) : null}
                 </article>
                 <article className="rounded-3xl bg-[#f1e6ed] p-5 lg:col-span-2">
                   <div className="grid grid-cols-2 gap-x-5 gap-y-6">
@@ -1298,6 +1839,7 @@ function App() {
         <Route path="/nightwear" element={<CollectionPage title="Nightwear" items={nightwear} sourcePath="/nightwear" />} />
         <Route path="/accessories" element={<CollectionPage title="Accessories" items={accessories} sourcePath="/accessories" />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route
           path="/bag"
           element={
@@ -1308,9 +1850,13 @@ function App() {
               ) : (
                 <div className="mt-6 grid gap-4">
                   {bagItems.map((item, index) => (
-                    <article key={`${item.id}-${index}`} className="rounded-2xl bg-white p-4 ring-1 ring-[#ebdde5]">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-[#6e5362]">{item.price}</p>
+                    <article key={`${item.id}-${index}`} className="flex items-center gap-4 flex-wrap sm:flex-nowrap rounded-2xl bg-white p-4 ring-1 ring-[#ebdde5]">
+                      <img src={item.src} alt={item.name} className="h-24 w-20 shrink-0 rounded-lg object-cover sm:h-32 sm:w-24" />
+                      <div className="flex-1">
+                        <p className="text-lg font-semibold text-[#3f1f34]">{item.name}</p>
+                        {item.selectedColor ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Color: {item.selectedColor}</p> : null}
+                        <p className="mt-1 text-base text-[#6e5362]">{item.price}</p>
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -1375,34 +1921,6 @@ function App() {
         />
       </Routes>
 
-      {landingVideos.length > 0 ? (
-        <section className="mx-auto mt-6 max-w-7xl px-6 pb-10 lg:px-8">
-          <div className="mb-5 flex items-end justify-between">
-            <h2 className="text-3xl font-semibold text-[#3f1f34]">Style In Motion</h2>
-            <p className="text-sm text-[#7d5d70]">A quick look at our latest collection videos.</p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {landingVideos.map((videoSrc, index) => (
-              <article key={videoSrc} className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#efdfe8]">
-                <video
-                  src={videoSrc}
-                  className="h-[360px] w-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  controls
-                  preload="metadata"
-                />
-                <div className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Lookbook Clip {index + 1}</p>
-                  <p className="mt-1 text-sm text-[#6e5362]">Signature details and fit highlights from the latest edit.</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       <footer className="mt-8 border-t border-[#e7d9e3] bg-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
