@@ -3,7 +3,7 @@ import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useS
 
 const navItems = [
   { label: 'SHOP', to: '/lingerie-sets' },
-  { label: 'COLLECTIONS', to: '/new-arrivals' },
+  { label: 'COLLECTIONS', to: '/#collections' },
   { label: 'ABOUT US', to: '/about-us' },
   { label: 'CONTACT', to: '/contact-us' },
   { label: 'RETURN & REFUND POLICY', to: '/return-and-refund-policy' },
@@ -17,7 +17,6 @@ const dummyDescriptions = [
 ]
 
 const lingerieCircleProductNames = [
-  'Whispher Bodysuit',
   'Bow Babydoll',
   'Midnight Bloom',
   'Luxe Set 41',
@@ -38,7 +37,7 @@ const sleepwearCircleProductNames = ['Blush Crush']
 const sleepwearCircleExtraProductIds = [47, 48, 49]
 const sleepwearFringeVariantIds = [48, 49]
 const sleepwearFringeSwatchColors = ['#000000', '#dc2626']
-const leatherCircleProductIds = [1206, 1207, 1208, 1209]
+const leatherCircleProductIds = [1206, 1207, 1209]
 const wrapSetCircleProductNames = ['Wrap set']
 const fullBodySetCircleProductIds = [1008, 1009, 1021]
 const midnightBloomSwatchColors = ['#000000', '#16a34a', '#dc2626']
@@ -68,10 +67,10 @@ const productOverrides = {
   36: { name: 'Blush Crush', price: '£29.99' },
   40: { name: 'Bow Babydoll', price: '£34.99' },
   43: { name: 'Whispher Bodysuit', price: '£34.99' },
-  47: { name: 'Loce Affair dress', price: '34.99£', description: '' },
+  47: { name: 'Loce Affair dress', price: '£34.99', description: '' },
   48: { name: 'French Kiss Maid Set', price: '£34.99' },
   49: { name: 'French Kiss Maid Set', price: '£34.99' },
-  55: { name: 'Ethereal Sheer Slip dress', price: '34.99£' },
+  55: { name: 'Ethereal Sheer Slip dress', price: '£34.99', description: '' },
   1001: { name: 'Bride Bloom Set', price: '£39.99' },
   1002: { name: 'Bride Bloom Set', price: '£39.99' },
   1003: { name: 'Love Spell Set', price: '£19.99' },
@@ -624,7 +623,7 @@ function App() {
         src: imageM14.src,
         gallery: [imageM14.src, imageM13.src, imageM11.src, imageM12.src],
         name: 'Desire Fringe Set',
-        price: '34.99£',
+        price: '£34.99',
         description: 'Combined product gallery for Desire Fringe Set. Scroll through 4 preview images for full product angles.',
       })
     }
@@ -681,10 +680,10 @@ function App() {
           }] : []),
           ...(greenGallery1312.length > 0 ? [{
             id: 131204,
-            label: 'Green',
+            label: 'Black',
             image: greenGallery1312[0],
             gallery: greenGallery1312,
-            swatchColor: '#22c55e',
+            swatchColor: '#000000',
           }] : [])
         ]
       })
@@ -702,7 +701,7 @@ function App() {
     const imageA1_26 = findNewImageByNames('a1(26)', 'a1 (26)')
     const imageA1_28 = findNewImageByNames('a1(28)', 'a1 (28)')
 
-    const redGallery1313 = [imageA1_54, imageA1_55, imageA1_56, imageA1_57, imageA1_58, imageA1_59, imageA1_60].filter(Boolean).map(img => img.src)
+    const redGallery1313 = [imageA1_56, imageA1_55, imageA1_54, imageA1_57, imageA1_58, imageA1_59, imageA1_60].filter(Boolean).map(img => img.src)
     const blackGallery1313 = [imageA1_22, imageA1_24, imageA1_26, imageA1_28].filter(Boolean).map(img => img.src)
     const defaultGallery1313 = redGallery1313.length > 0 ? redGallery1313 : (blackGallery1313.length > 0 ? blackGallery1313 : [])
 
@@ -777,19 +776,54 @@ function App() {
         return
       }
 
-      customProducts.push({
-        id: 1205 + index,
-        src: image.src,
-        gallery: [image.src],
-        name: 'Women Harness',
-        price: '34.99£',
-        description: 'Single product preview for Women Harness.',
-      })
+      const currentId = 1205 + index
+      
+      if (currentId === 1209) {
+        const blackImageSrc = imageM58 ? imageM58.src : null;
+        const colorOptions = [
+          {
+            id: 120901,
+            label: 'Red',
+            image: image.src,
+            gallery: [image.src],
+            swatchColor: '#dc2626',
+          }
+        ];
+        
+        if (blackImageSrc) {
+          colorOptions.push({
+            id: 120902,
+            label: 'Black',
+            image: blackImageSrc,
+            gallery: [blackImageSrc],
+            swatchColor: '#000000',
+          });
+        }
+        
+        customProducts.push({
+          id: currentId,
+          src: image.src,
+          gallery: [image.src],
+          name: 'Women Harness',
+          price: '£34.99',
+          description: 'Choose your preferred color and preview each Women Harness variation.',
+          colorOptions
+        })
+      } else {
+        customProducts.push({
+          id: currentId,
+          src: image.src,
+          gallery: [image.src],
+          name: 'Women Harness',
+          price: '£34.99',
+          description: 'Single product preview for Women Harness.',
+        })
+      }
     })
 
     return customProducts
       .map(applyProductOverride)
-      .filter((product) => ![1205, 1210, 1211].includes(product.id))
+      .filter((product) => ![1205, 1208, 1210, 1211].includes(product.id))
   }, [newImageModules])
   const extraNightwearProducts = useMemo(() => {
     const newImages = Object.entries(newImageModules)
@@ -1107,7 +1141,7 @@ function App() {
       src: defaultSequence[0] || '',
       gallery: defaultSequence,
       name: 'Love Affair Dress',
-      price: '34.99£',
+      price: '£34.99',
       colorOptions: [
         ...(laRed.length > 0 ? [{ id: 13101, label: 'Red', image: laRed[0], gallery: laRed, swatchColor: '#dc2626' }] : []),
         ...(laWhite.length > 0 ? [{ id: 13102, label: 'White', image: laWhite[0], gallery: laWhite, swatchColor: '#ffffff' }] : []),
@@ -1230,6 +1264,7 @@ function App() {
             gallery: sleepwearFringeVariants[0].gallery,
             name: sleepwearFringeVariants[0].name,
             price: sleepwearFringeVariants[0].price,
+            description: '',
             colorOptions: sleepwearFringeVariants.map((item, index) => {
               const fallbackSequence = sleepwearFringeVariants
                 .flatMap((variant) => variant.gallery ?? [variant.src])
@@ -1294,6 +1329,7 @@ function App() {
       ...bodysuitsCircleProductIds,
       ...leatherCircleProducts.map((item) => item.id),
       ...fullBodySetCircleProducts.map((item) => item.id),
+      ...sleepwearFringeVariantIds,
     ])
     return mergedIds
   }, [lingerieCircleProductIds, bodysuitsCircleProductIds, leatherCircleProducts, fullBodySetCircleProducts])
@@ -1409,8 +1445,15 @@ function App() {
   }
 
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-  }, [location.pathname, location.search])
+    if (location.hash) {
+      setTimeout(() => {
+        const element = document.getElementById(location.hash.substring(1))
+        if (element) element.scrollIntoView({ behavior: 'smooth' })
+      }, 10)
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    }
+  }, [location.pathname, location.search, location.hash])
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset'
@@ -1430,7 +1473,12 @@ function App() {
             <p className="text-[11px] uppercase tracking-wider text-[#8f6580] sm:text-sm sm:normal-case sm:tracking-normal">Bestseller</p>
             <h3 className="mt-1 line-clamp-2 text-sm font-medium leading-snug text-[#45253a] sm:text-lg">{product.name}</h3>
             <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-semibold">{product.price}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-[#7d2f56]">{product.price}</p>
+                <p className="text-xs font-medium text-[#a34977] line-through">
+                  £{(parseFloat(product.price.replace(/[^0-9.]/g, '')) * 1.15).toFixed(2)}
+                </p>
+              </div>
               <div className="flex gap-1.5 sm:gap-2">
                 <button type="button" onClick={() => addToBag(product)} className="rounded-full border border-[#d8bfd0] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:px-3 sm:text-xs">
                   Add
@@ -1574,9 +1622,15 @@ function App() {
             ) : null}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34977]">Product Detail</p>
             <h2 className="mt-3 break-words text-2xl font-semibold leading-tight text-[#3f1f34] sm:text-4xl">{activeProductName}</h2>
-            <p className="mt-3 text-lg font-semibold text-[#662845] sm:mt-4 sm:text-xl">{activeProductPrice}</p>
+            <div className="mt-3 flex items-center gap-3 sm:mt-4">
+              <p className="text-lg font-semibold text-[#7d2f56] sm:text-xl">{activeProductPrice}</p>
+              {activeProductPrice && (
+                <p className="text-sm font-medium text-[#a34977] line-through sm:text-base">
+                  £{(parseFloat(activeProductPrice.replace(/[^0-9.]/g, '')) * 1.15).toFixed(2)}
+                </p>
+              )}
+            </div>
             {visibleProductDescription ? (
               <p className="mt-4 text-sm leading-7 text-[#6e5362] sm:mt-5 sm:text-base">{visibleProductDescription}</p>
             ) : null}
@@ -1760,9 +1814,6 @@ function App() {
               <div className="mt-auto pt-10">
                 <div className="mb-6 border-t border-gray-200"></div>
                 <p className="text-[12px] mb-4 font-normal uppercase text-[#111]">Free Worldwide Shipping</p>
-                <Link to="/lingerie-sets" onClick={() => setIsMobileMenuOpen(false)} className="block w-full bg-black text-white text-center py-3 text-[13px] font-semibold uppercase tracking-wider rounded mb-8 hover:bg-gray-800 transition-colors">
-                  Shop Bestsellers
-                </Link>
                 <div className="space-y-6 pb-2">
                   <a href="#" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
@@ -1800,7 +1851,7 @@ function App() {
                 </article>
               </section>
 
-              <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-5 lg:px-8">
+              <section id="collections" className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-5 lg:px-8">
                 <article className="flex flex-col justify-center rounded-3xl bg-[#fff] p-8 shadow-sm ring-1 ring-[#f2e6ee] lg:col-span-3">
                   <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#b14f7f]">Spring Collection 2026</p>
                   <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#3f1f34] sm:text-5xl"></h1>
@@ -1910,7 +1961,12 @@ function App() {
                       <div className="flex-1">
                         <p className="text-lg font-semibold text-[#3f1f34]">{item.name}</p>
                         {item.selectedColor ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Color: {item.selectedColor}</p> : null}
-                        <p className="mt-1 text-base text-[#6e5362]">{item.price}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="text-base font-semibold text-[#7d2f56]">{item.price}</p>
+                          <p className="text-xs font-medium text-[#a34977] line-through">
+                            £{(parseFloat(item.price.replace(/[^0-9.]/g, '')) * 1.15).toFixed(2)}
+                          </p>
+                        </div>
                       </div>
                     </article>
                   ))}
@@ -2199,21 +2255,20 @@ function App() {
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           <div>
             <Link to="/" className="text-lg text-[#7f395b]" style={brandWordmarkStyle}>Hush Sweety</Link>
-            <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns across the UK.</p>
+            <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns worldwide.</p>
           </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">Shop</p>
             <div className="mt-3 grid gap-2">
               <Link to="/lingerie-sets" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Lingerie Sets</Link>
-              <Link to="/nightwear" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Nightwear</Link>
-              <Link to="/accessories" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Accessories</Link>
+              <Link to="/sleepwear" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Sleepwear</Link>
+              <Link to="/wrap-set" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Wrap set</Link>
             </div>
           </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">Help</p>
             <div className="mt-3 grid gap-2">
               <Link to="/return-and-refund-policy" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Delivery & Returns</Link>
-              <Link to="/checkout" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Size Guide</Link>
               <Link to="/contact-us" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Contact Us</Link>
               <Link to="/terms-of-service" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Terms and Services</Link>
             </div>
