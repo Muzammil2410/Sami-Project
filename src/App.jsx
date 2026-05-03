@@ -4,7 +4,7 @@ import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useS
 const navItems = [
   { label: 'SHOP', to: '/lingerie-sets' },
   { label: 'COLLECTIONS', to: '/new-arrivals' },
-  { label: 'ABOUT US', to: '/' },
+  { label: 'ABOUT US', to: '/about-us' },
   { label: 'CONTACT', to: '/' },
 ]
 
@@ -57,7 +57,7 @@ const groupedProductSets = [
 
 const productOverrides = {
   1: { name: 'Love Affair Dress', price: '£34.99' },
-  2: { name: 'Whisper', price: '£24.99' },
+  2: { name: 'Whisper', price: '£24.99', description: '' },
   3: { name: 'Ivory Whispher Set', price: '£34.99' },
   9: { name: 'Midnight Muse', price: '£29.99' },
   13: { name: 'Obsidian Lace Bodysuit', price: '£39.99' },
@@ -512,13 +512,36 @@ function App() {
     }
 
     if (imageF) {
+      const blackGallery = [imageF.src]
+      const redGallery = [
+        findNewImageByNames('a3(5)', 'a3 (5)')?.src,
+        findNewImageByNames('a3(6)', 'a3 (6)')?.src,
+        findNewImageByNames('a3(7)', 'a3 (7)')?.src,
+      ].filter(Boolean)
+
       customProducts.push({
         id: 1004,
         src: imageF.src,
-        gallery: [imageF.src],
+        gallery: blackGallery,
         name: 'Obsidian Harness Set',
         price: '£39.99',
-        description: 'Single product preview for Obsidian Harness Set.',
+        description: 'Choose your preferred color and preview each variation.',
+        colorOptions: [
+          {
+            id: 100401,
+            label: 'Black',
+            image: blackGallery[0],
+            gallery: blackGallery,
+            swatchColor: '#000000',
+          },
+          ...(redGallery.length > 0 ? [{
+            id: 100402,
+            label: 'Red',
+            image: redGallery[0],
+            gallery: redGallery,
+            swatchColor: '#dc2626',
+          }] : [])
+        ]
       })
     }
 
@@ -1857,6 +1880,20 @@ function App() {
         <Route path="/accessories" element={<CollectionPage title="Accessories" items={accessories} sourcePath="/accessories" />} />
         <Route path="/product/:id" element={<ProductDetailsPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route
+          path="/about-us"
+          element={
+            <section className="mx-auto max-w-3xl px-6 py-14 text-center lg:px-8">
+              <h2 className="text-4xl font-semibold text-[#3f1f34] mb-8">About Hush Sweety</h2>
+              <div className="space-y-6 text-[#6e5362] text-lg leading-relaxed">
+                <p>At Hush Sweety, lingerie isn’t just what you wear. It’s how you show up.</p>
+                <p>Soft, bold, a little playful. Made to hug you in all the right places and remind you that confidence can be quiet or a little naughty.</p>
+                <p>For slow mornings, late nights, and everything in between.<br/>Wear it for you. Always.</p>
+                <p className="text-xl font-bold text-[#7d2f56] pt-8">Hush Sweety</p>
+              </div>
+            </section>
+          }
+        />
         <Route
           path="/bag"
           element={
