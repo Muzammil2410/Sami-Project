@@ -67,7 +67,7 @@ const productOverrides = {
   36: { name: 'Blush Crush', price: '£29.99' },
   40: { name: 'Bow Babydoll', price: '£34.99' },
   43: { name: 'Whispher Bodysuit', price: '£34.99' },
-  47: { name: 'Loce Affair dress', price: '34.99£' },
+  47: { name: 'Loce Affair dress', price: '34.99£', description: '' },
   48: { name: 'French Kiss Maid Set', price: '£34.99' },
   49: { name: 'French Kiss Maid Set', price: '£34.99' },
   55: { name: 'Ethereal Sheer Slip dress', price: '34.99£' },
@@ -342,6 +342,12 @@ function App() {
             findNewImageByNames('a1(19)', 'a1 (19)')?.src,
             findNewImageByNames('a1(25)', 'a1 (25)')?.src,
           ].filter(Boolean)
+          const brownSequence = [
+            findNewImageByNames('a3(1)', 'a3 (1)')?.src,
+            findNewImageByNames('a3(2)', 'a3 (2)')?.src,
+            findNewImageByNames('a3(3)', 'a3 (3)')?.src,
+            findNewImageByNames('a3(4)', 'a3 (4)')?.src,
+          ].filter(Boolean)
 
           return applyProductOverride({
             ...product,
@@ -373,6 +379,17 @@ function App() {
                       image: whiteSequence[0],
                       gallery: whiteSequence,
                       swatchColor: '#ffffff',
+                    },
+                  ]
+                : []),
+              ...(brownSequence.length > 0
+                ? [
+                    {
+                      id: 5504,
+                      label: 'Brown',
+                      image: brownSequence[0],
+                      gallery: brownSequence,
+                      swatchColor: '#8b4513',
                     },
                   ]
                 : []),
