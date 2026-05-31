@@ -84,7 +84,7 @@ const productOverrides = {
   1021: { name: 'Love Story Set', price: '£64.99' },
 }
 
-const SIZED_PRODUCT_IDS = [1005, 1008, 55, 1003, 1310, 48049, 1006]
+const SIZED_PRODUCT_IDS = [1005, 1008, 55, 1003, 1310, 48049, 1006, 1001]
 
 const applyProductOverride = (product) => {
   const override = productOverrides[product.id]
