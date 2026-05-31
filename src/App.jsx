@@ -84,6 +84,8 @@ const productOverrides = {
   1021: { name: 'Love Story Set', price: '£64.99' },
 }
 
+const SIZED_PRODUCT_IDS = [1005, 1008, 55, 1003, 1310, 48049, 1006]
+
 const applyProductOverride = (product) => {
   const override = productOverrides[product.id]
   return override ? { ...product, ...override } : product
@@ -1429,7 +1431,17 @@ function App() {
     .filter((item) => item.id !== 57)
     .filter((item) => !heroCircleExcludedProductIds.has(item.id))
   const checkoutProductId = Number(searchParams.get('product'))
-  const checkoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const checkoutColor = searchParams.get('color')
+  const checkoutSize = searchParams.get('size')
+  const rawCheckoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const checkoutProduct = useMemo(() => {
+    if (!rawCheckoutProduct) return null
+    return {
+      ...rawCheckoutProduct,
+      selectedColor: checkoutColor ?? rawCheckoutProduct.selectedColor,
+      selectedSize: checkoutSize ?? rawCheckoutProduct.selectedSize,
+    }
+  }, [rawCheckoutProduct, checkoutColor, checkoutSize])
   const extraGalleryImageForSet40 = useMemo(() => {
     const newImages = Object.entries(newImageModules)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -1483,7 +1495,9 @@ function App() {
   }
 
   const openCheckout = (product) => {
-    navigate(`/checkout?product=${product.id}`)
+    const sizeParam = product.selectedSize ? `&size=${encodeURIComponent(product.selectedSize)}` : ''
+    const colorParam = product.selectedColor ? `&color=${encodeURIComponent(product.selectedColor)}` : ''
+    navigate(`/checkout?product=${product.id}${colorParam}${sizeParam}`)
     setNotice('')
   }
 
@@ -1588,6 +1602,7 @@ function App() {
     const product = [...productsForLookup, ...lingerieCircleProducts, ...sleepwearCircleProducts].find((item) => item.id === Number(id))
     const [selectedPreview, setSelectedPreview] = useState(0)
     const [selectedColorIndex, setSelectedColorIndex] = useState(0)
+    const [selectedSize, setSelectedSize] = useState('S')
     const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
     const previousCollectionPath = location.state?.from
     const isAccessoryProduct = product ? accessories.some((item) => item.id === product.id) : false
@@ -1631,6 +1646,7 @@ function App() {
     useEffect(() => {
       setSelectedPreview(0)
       setSelectedColorIndex(0)
+      setSelectedSize('S')
     }, [id])
 
     if (!product) {
@@ -1708,6 +1724,27 @@ function App() {
                 </div>
               </div>
             ) : null}
+            {SIZED_PRODUCT_IDS.includes(product.id) && (
+              <div className="mt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Size</p>
+                <div className="flex flex-wrap gap-2">
+                  {['S', 'M', 'L', 'XL'].map((size) => (
+                    <button
+                      key={`size-option-${size}`}
+                      type="button"
+                      onClick={() => setSelectedSize(size)}
+                      className={`h-10 w-12 rounded-lg border-2 flex items-center justify-center text-sm font-semibold transition ${
+                        selectedSize === size
+                          ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
+                          : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {showSetOfferNotice ? (
               <p className="mt-4 rounded-xl bg-[#f6e7ef] px-4 py-3 text-sm font-semibold text-[#7d2f56]">
                 Love Story Set is shown first as the full set. You can also select single pieces from the options below.
@@ -1742,7 +1779,8 @@ function App() {
                     name: activeProductName,
                     price: activeProductPrice,
                     src: productGallery[0],
-                    selectedColor: colorOptions[selectedColorIndex]?.label
+                    selectedColor: colorOptions[selectedColorIndex]?.label,
+                    selectedSize: SIZED_PRODUCT_IDS.includes(product.id) ? selectedSize : null
                   })
                 }
                 className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
@@ -1757,7 +1795,8 @@ function App() {
                     name: activeProductName,
                     price: activeProductPrice,
                     src: productGallery[0],
-                    selectedColor: colorOptions[selectedColorIndex]?.label
+                    selectedColor: colorOptions[selectedColorIndex]?.label,
+                    selectedSize: SIZED_PRODUCT_IDS.includes(product.id) ? selectedSize : null
                   })
                 }
                 className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
@@ -1852,14 +1891,18 @@ function App() {
 
           <div className="flex-1 px-6 py-10 flex flex-col bg-white">
             <div className="flex flex-col gap-8 text-[14px] tracking-wider font-normal uppercase text-[#111]">
-              {navItems
-                .filter((item) => item.label !== 'SHOP')
-                .map((item) => (
-                  <Link key={item.label} to={item.to} className="flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
-                    {item.label}
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                  </Link>
-                ))}
+              {[
+                { label: 'SHOP', to: '/#hero' },
+                { label: 'NEW ARRIVAL', to: '/full-body-set' },
+                { label: 'ABOUT US', to: '/about-us' },
+                { label: 'CONTACT', to: '/contact-us' },
+                { label: 'RETURN & REFUND POLICY', to: '/return-and-refund-policy' },
+              ].map((item) => (
+                <Link key={item.label} to={item.to} className="flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
+                  {item.label}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </Link>
+              ))}
             </div>
 
             <div className="mt-auto pt-10">
@@ -1940,13 +1983,59 @@ function App() {
                 </article>
               </section>
 
-              <section className="mx-auto max-w-7xl px-6 pb-4 lg:px-8">
-                <div className="flex flex-wrap gap-3">
-                  <Link to="/lingerie-sets" className="rounded-full border border-[#dec8d4] bg-white px-4 py-2 text-sm text-[#6a455a] hover:border-[#c99ab2] hover:text-[#a14072]">Most Loved</Link>
-                  <Link to="/new-arrivals" className="rounded-full border border-[#dec8d4] bg-white px-4 py-2 text-sm text-[#6a455a] hover:border-[#c99ab2] hover:text-[#a14072]">Romantic Lace</Link>
-                  <Link to="/nightwear" className="rounded-full border border-[#dec8d4] bg-white px-4 py-2 text-sm text-[#6a455a] hover:border-[#c99ab2] hover:text-[#a14072]">Bold & Provocative</Link>
-                  <Link to="/accessories" className="rounded-full border border-[#dec8d4] bg-white px-4 py-2 text-sm text-[#6a455a] hover:border-[#c99ab2] hover:text-[#a14072]">Perfect Gift</Link>
-                  <Link to="/new-arrivals" className="rounded-full border border-[#dec8d4] bg-white px-4 py-2 text-sm text-[#6a455a] hover:border-[#c99ab2] hover:text-[#a14072]">Soft & Comfortable</Link>
+              <section className="mx-auto max-w-7xl px-6 pb-8 lg:px-8">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold uppercase tracking-wider text-[#7d2f56]">Customer Reviews</h2>
+                  <p className="text-sm text-[#7b5a6e]">What our community is saying about Hush Sweety</p>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    {
+                      name: "Sarah M.",
+                      rating: 5,
+                      date: "May 2026",
+                      review: "Absolutely in love with the Love Lace Set! The fabric is incredibly soft, fits perfectly, and the design is so elegant. Highly recommend!",
+                      verified: true
+                    },
+                    {
+                      name: "Emily R.",
+                      rating: 5,
+                      date: "April 2026",
+                      review: "The Sculpt Bodysuit is a game changer. It holds everything in perfectly while still being super comfortable to wear all day long. Will buy other colors!",
+                      verified: true
+                    },
+                    {
+                      name: "Jessica T.",
+                      rating: 5,
+                      date: "May 2026",
+                      review: "Beautiful packaging and very fast delivery. The Love Story Set feels so premium and luxurious. My absolute favorite purchase this year.",
+                      verified: true
+                    }
+                  ].map((item, index) => (
+                    <article key={index} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[#efdfe8] flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-semibold text-[#3f1f34]">{item.name}</span>
+                            {item.verified && (
+                              <span className="flex items-center gap-0.5 rounded bg-[#fff0f7] px-1.5 py-0.5 text-[10px] font-medium text-[#7d2f56] ring-1 ring-[#7d2f56]/10">
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-[#a37f95]">{item.date}</span>
+                        </div>
+                        <div className="flex gap-0.5 mb-3">
+                          {[...Array(item.rating)].map((_, i) => (
+                            <svg key={i} className="h-4 w-4" style={{ fill: '#fbbf24' }} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                        </div>
+                        <p className="text-sm leading-relaxed text-[#6e5362]">"{item.review}"</p>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </section>
 
@@ -2009,6 +2098,7 @@ function App() {
                       <div className="flex-1">
                         <p className="text-lg font-semibold text-[#3f1f34]">{item.name}</p>
                         {item.selectedColor ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Color: {item.selectedColor}</p> : null}
+                        {item.selectedSize ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Size: {item.selectedSize}</p> : null}
                         <div className="mt-1 flex items-center gap-2">
                           <p className="text-base font-semibold text-[#7d2f56]">{item.price}</p>
                           <p className="text-xs font-medium text-[#a34977] line-through">
@@ -2032,7 +2122,11 @@ function App() {
           element={
             <section className="mx-auto max-w-3xl px-6 py-10 lg:px-8">
               <h2 className="text-3xl font-semibold text-[#3f1f34]">Customer Details</h2>
-              <p className="mt-2 text-sm text-[#6e5362]">Complete details for {checkoutProduct ? checkoutProduct.name : 'your selected products'}.</p>
+              <p className="mt-2 text-sm text-[#6e5362]">
+                Complete details for {checkoutProduct ? checkoutProduct.name : 'your selected products'}
+                {checkoutProduct?.selectedColor ? ` (${checkoutProduct.selectedColor})` : ''}
+                {checkoutProduct?.selectedSize ? ` - Size: ${checkoutProduct.selectedSize}` : ''}.
+              </p>
               <form onSubmit={submitCustomerDetails} className="mt-6 space-y-4 rounded-3xl bg-white p-6 ring-1 ring-[#ead9e4]">
                 {[
                   { key: 'fullName', label: 'Full Name', type: 'text' },
@@ -2306,7 +2400,7 @@ function App() {
             <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns worldwide.</p>
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">About Us</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">Information</p>
             <div className="mt-3 grid gap-2">
               <a href="mailto:support@hushsweety.com" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">support@hushsweety.com</a>
             </div>
