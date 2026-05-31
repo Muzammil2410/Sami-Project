@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 const navItems = [
+  { label: 'SHOP', to: '/#hero' },
   { label: 'SHOP', to: '/lingerie-sets' },
-  { label: 'COLLECTIONS', to: '/#collections' },
+  { label: 'SHOP', to: '/#collections' },
+  { label: 'NEW ARRIVAL', to: '/full-body-set' },
   { label: 'ABOUT US', to: '/about-us' },
   { label: 'CONTACT', to: '/contact-us' },
   { label: 'RETURN & REFUND POLICY', to: '/return-and-refund-policy' },
@@ -32,9 +34,9 @@ const bowLuxeVariantIds = [40, 41]
 const bowLuxeSwatchColors = ['#000000', '#dc2626']
 
 const bodysuitsCircleProductNames = ['Whisper', 'Midnight Muse', 'Whispher Bodyysuit', 'Love Affair Dress']
-const bodysuitsCircleExtraProductIds = [13, 43, 1004]
+const bodysuitsCircleExtraProductIds = [13, 43, 1004, 55]
 const sleepwearCircleProductNames = ['Blush Crush']
-const sleepwearCircleExtraProductIds = [47, 48, 49]
+const sleepwearCircleExtraProductIds = []
 const sleepwearFringeVariantIds = [48, 49]
 const sleepwearFringeSwatchColors = ['#000000', '#dc2626']
 const leatherCircleProductIds = [1206, 1207, 1209]
@@ -92,7 +94,6 @@ const brandWordmarkStyle = {
   fontWeight: 700,
   letterSpacing: '0.04em',
   textTransform: 'uppercase',
-  textShadow: '0 1px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(125,47,86,0.25)',
 }
 
 function App() {
@@ -186,15 +187,15 @@ function App() {
     const productsWithSet54 =
       imageR && imageQ && imageT && imageS
         ? combinedProducts.map((product) =>
-            product.id === 54
-              ? {
-                  ...product,
-                  src: imageR.src,
-                  gallery: [imageR.src, imageQ.src, imageT.src, imageS.src],
-                  description: 'Combined product gallery for Luxe Set 54. Scroll through 4 preview images for full product angles.',
-                }
-              : product,
-          )
+          product.id === 54
+            ? {
+              ...product,
+              src: imageR.src,
+              gallery: [imageR.src, imageQ.src, imageT.src, imageS.src],
+              description: 'Combined product gallery for Luxe Set 54. Scroll through 4 preview images for full product angles.',
+            }
+            : product,
+        )
         : combinedProducts
 
     return productsWithSet54
@@ -226,25 +227,25 @@ function App() {
               },
               ...(whiteSequence.length > 0
                 ? [
-                    {
-                      id: 902,
-                      label: 'White',
-                      image: whiteSequence[0],
-                      gallery: whiteSequence,
-                      swatchColor: '#ffffff',
-                    },
-                  ]
+                  {
+                    id: 902,
+                    label: 'White',
+                    image: whiteSequence[0],
+                    gallery: whiteSequence,
+                    swatchColor: '#ffffff',
+                  },
+                ]
                 : []),
               ...(redSequence.length > 0
                 ? [
-                    {
-                      id: 903,
-                      label: 'Red',
-                      image: redSequence[0],
-                      gallery: redSequence,
-                      swatchColor: '#dc2626',
-                    },
-                  ]
+                  {
+                    id: 903,
+                    label: 'Red',
+                    image: redSequence[0],
+                    gallery: redSequence,
+                    swatchColor: '#dc2626',
+                  },
+                ]
                 : []),
             ],
           })
@@ -281,25 +282,25 @@ function App() {
               },
               ...(redSequence.length > 0
                 ? [
-                    {
-                      id: 1302,
-                      label: 'Red',
-                      image: redSequence[0],
-                      gallery: redSequence,
-                      swatchColor: '#dc2626',
-                    },
-                  ]
+                  {
+                    id: 1302,
+                    label: 'Red',
+                    image: redSequence[0],
+                    gallery: redSequence,
+                    swatchColor: '#dc2626',
+                  },
+                ]
                 : []),
               ...(whiteSequence.length > 0
                 ? [
-                    {
-                      id: 1303,
-                      label: 'White',
-                      image: whiteSequence[0],
-                      gallery: whiteSequence,
-                      swatchColor: '#ffffff',
-                    },
-                  ]
+                  {
+                    id: 1303,
+                    label: 'White',
+                    image: whiteSequence[0],
+                    gallery: whiteSequence,
+                    swatchColor: '#ffffff',
+                  },
+                ]
                 : []),
             ],
           })
@@ -309,9 +310,24 @@ function App() {
           const pic2 = findNewImageByNames('a1(29)', 'a1 (29)')
           const newGallery = [...product.gallery]
           if (pic2) newGallery.push(pic2.src)
-          
+
           return applyProductOverride({
             ...product,
+            gallery: newGallery,
+          })
+        }
+
+        if (product.id === 47) {
+          const l1 = findNewImageByNames('l(1)', 'l (1)')
+          const l2 = findNewImageByNames('l(2)', 'l (2)')
+          const newGallery = []
+          if (l2) newGallery.push(l2.src)
+          if (l1) newGallery.push(l1.src)
+          newGallery.push(product.src)
+
+          return applyProductOverride({
+            ...product,
+            src: l2 ? l2.src : product.src,
             gallery: newGallery,
           })
         }
@@ -362,36 +378,36 @@ function App() {
               },
               ...(blackSequence.length > 0
                 ? [
-                    {
-                      id: 5502,
-                      label: 'Black',
-                      image: blackSequence[0],
-                      gallery: blackSequence,
-                      swatchColor: '#000000',
-                    },
-                  ]
+                  {
+                    id: 5502,
+                    label: 'Black',
+                    image: blackSequence[0],
+                    gallery: blackSequence,
+                    swatchColor: '#000000',
+                  },
+                ]
                 : []),
               ...(whiteSequence.length > 0
                 ? [
-                    {
-                      id: 5503,
-                      label: 'White',
-                      image: whiteSequence[0],
-                      gallery: whiteSequence,
-                      swatchColor: '#ffffff',
-                    },
-                  ]
+                  {
+                    id: 5503,
+                    label: 'White',
+                    image: whiteSequence[0],
+                    gallery: whiteSequence,
+                    swatchColor: '#ffffff',
+                  },
+                ]
                 : []),
               ...(brownSequence.length > 0
                 ? [
-                    {
-                      id: 5504,
-                      label: 'Brown',
-                      image: brownSequence[0],
-                      gallery: brownSequence,
-                      swatchColor: '#8b4513',
-                    },
-                  ]
+                  {
+                    id: 5504,
+                    label: 'Brown',
+                    image: brownSequence[0],
+                    gallery: brownSequence,
+                    swatchColor: '#8b4513',
+                  },
+                ]
                 : []),
             ],
           })
@@ -469,7 +485,7 @@ function App() {
         gallery: whiteGallery,
         name: 'Luxe Set 1001',
         price: '£39.00',
-        description: 'Choose your preferred color and preview each variation.',
+        description: '',
         colorOptions: [
           {
             id: 100101,
@@ -525,7 +541,7 @@ function App() {
         gallery: blackGallery,
         name: 'Obsidian Harness Set',
         price: '£39.99',
-        description: 'Choose your preferred color and preview each variation.',
+        description: '',
         colorOptions: [
           {
             id: 100401,
@@ -576,7 +592,7 @@ function App() {
         gallery: defaultSculptSequence,
         name: 'Sculpt Bodysuit',
         price: '£24.99',
-        description: 'Choose your preferred color and preview each variation.',
+        description: '',
         colorOptions: [
           ...(blackSculpt.length > 0 ? [{
             id: 100601,
@@ -655,7 +671,7 @@ function App() {
         gallery: defaultGallery1312,
         name: 'Love Lace Set',
         price: '£19.99',
-        description: 'Choose your preferred color and preview each variation.',
+        description: '',
         colorOptions: [
           ...(lightBlueGallery1312.length > 0 ? [{
             id: 131201,
@@ -712,7 +728,7 @@ function App() {
         gallery: defaultGallery1313,
         name: 'The Showpiece Basque',
         price: '£34.99',
-        description: 'Choose your preferred color and preview each variation.',
+        description: '',
         colorOptions: [
           ...(redGallery1313.length > 0 ? [{
             id: 131301,
@@ -743,7 +759,7 @@ function App() {
         gallery: blackGallery,
         name: 'Wrap set',
         price: '£30.00',
-        description: 'Choose your preferred color and preview each Wrap set variation.',
+        description: '',
         colorOptions: [
           {
             id: 110201,
@@ -777,7 +793,7 @@ function App() {
       }
 
       const currentId = 1205 + index
-      
+
       if (currentId === 1209) {
         const blackImageSrc = imageM58 ? imageM58.src : null;
         const colorOptions = [
@@ -789,7 +805,7 @@ function App() {
             swatchColor: '#dc2626',
           }
         ];
-        
+
         if (blackImageSrc) {
           colorOptions.push({
             id: 120902,
@@ -799,14 +815,14 @@ function App() {
             swatchColor: '#000000',
           });
         }
-        
+
         customProducts.push({
           id: currentId,
           src: image.src,
           gallery: [image.src],
           name: 'Women Harness',
           price: '£34.99',
-          description: 'Choose your preferred color and preview each Women Harness variation.',
+          description: '',
           colorOptions
         })
       } else {
@@ -1147,7 +1163,7 @@ function App() {
         ...(laWhite.length > 0 ? [{ id: 13102, label: 'White', image: laWhite[0], gallery: laWhite, swatchColor: '#ffffff' }] : []),
         ...(laBlack.length > 0 ? [{ id: 13103, label: 'Black', image: laBlack[0], gallery: laBlack, swatchColor: '#000000' }] : []),
       ],
-      description: 'Choose your preferred color and preview each Love Affair Dress variation.',
+      description: '',
     }
   }, [newImageModules])
 
@@ -1156,7 +1172,7 @@ function App() {
     const selectedByNameProducts = lingerieCircleProductNames
       .map((targetName) => productsForLookup.find((product) => product.name === targetName))
       .filter(Boolean)
-    const selectedByIdProducts = [...lingerieCircleExtraProductIds, 55]
+    const selectedByIdProducts = [...lingerieCircleExtraProductIds, 47]
       .map((targetId) => productsForLookup.find((product) => product.id === targetId))
       .filter(Boolean)
     const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
@@ -1167,21 +1183,21 @@ function App() {
     const midnightBloomCombinedProduct =
       midnightBloomVariants.length > 0
         ? {
-            ...midnightBloomVariants[0],
-            id: 19027,
-            src: midnightBloomVariants[0].src,
-            gallery: midnightBloomVariants.map((item) => item.src),
-            name: 'Midnight Bloom',
-            price: midnightBloomVariants[0].price,
-            colorOptions: midnightBloomVariants.map((item, index) => ({
-              id: item.id,
-              label: `Color ${index + 1}`,
-              image: item.src,
-              gallery: item.gallery,
-              swatchColor: midnightBloomSwatchColors[index] ?? '#d8bfd0',
-            })),
-            description: 'Choose your preferred color and preview each Midnight Bloom variation.',
-          }
+          ...midnightBloomVariants[0],
+          id: 19027,
+          src: midnightBloomVariants[0].src,
+          gallery: midnightBloomVariants.map((item) => item.src),
+          name: 'Midnight Bloom',
+          price: midnightBloomVariants[0].price,
+          colorOptions: midnightBloomVariants.map((item, index) => ({
+            id: item.id,
+            label: `Color ${index + 1}`,
+            image: item.src,
+            gallery: item.gallery,
+            swatchColor: midnightBloomSwatchColors[index] ?? '#d8bfd0',
+          })),
+          description: '',
+        }
         : null
     const bowLuxeVariants = bowLuxeVariantIds
       .map((variantId) => productsForLookup.find((product) => product.id === variantId))
@@ -1189,30 +1205,92 @@ function App() {
     const bowLuxeCombinedProduct =
       bowLuxeVariants.length > 0
         ? {
-            ...bowLuxeVariants[0],
-            id: 40041,
-            src: bowLuxeVariants[0].src,
-            gallery: bowLuxeVariants[0].gallery,
-            name: 'Bow Babydoll',
-            price: bowLuxeVariants[0].price,
-            colorOptions: bowLuxeVariants.map((item, index) => ({
-              id: item.id,
-              label: index === 0 ? 'Black' : 'Red',
-              image: item.src,
-              gallery: item.gallery,
-              swatchColor: bowLuxeSwatchColors[index] ?? '#d8bfd0',
-            })),
-            description: 'Choose Black or Red and preview the full image sequence for each style.',
-          }
+          ...bowLuxeVariants[0],
+          id: 40041,
+          src: bowLuxeVariants[0].src,
+          gallery: bowLuxeVariants[0].gallery,
+          name: 'Bow Babydoll',
+          price: bowLuxeVariants[0].price,
+          colorOptions: bowLuxeVariants.map((item, index) => ({
+            id: item.id,
+            label: index === 0 ? 'Black' : 'Red',
+            image: item.src,
+            gallery: item.gallery,
+            swatchColor: bowLuxeSwatchColors[index] ?? '#d8bfd0',
+          })),
+          description: '',
+        }
         : null
 
+    const sleepwearFringeVariants = sleepwearFringeVariantIds
+      .map((variantId) => productsForLookup.find((product) => product.id === variantId))
+      .filter(Boolean)
+    const sleepwearFringeCombinedProduct = (() => {
+      if (sleepwearFringeVariants.length === 0) return null
+
+      const newImages = Object.entries(newImageModules)
+        .map(([path, src]) => ({
+          fileName: path.split('/').pop()?.replace('.jpeg', '').toLowerCase() ?? '',
+          src,
+        }))
+      const findNewImageByNames = (...possibleNames) => {
+        const normalizedTargets = possibleNames.map((name) => name.toLowerCase().replace(/\s+/g, ''))
+        return newImages.find((item) => normalizedTargets.includes(item.fileName.replace(/\s+/g, '')))
+      }
+
+      const blackKImages = [
+        findNewImageByNames('k(1)', 'k (1)'),
+        findNewImageByNames('k(2)', 'k (2)'),
+        findNewImageByNames('k(3)', 'k (3)'),
+        findNewImageByNames('k(4)', 'k (4)'),
+        findNewImageByNames('k(5)', 'k (5)'),
+      ].map(img => img?.src).filter(Boolean)
+
+      const defaultSrc = blackKImages.length > 0 ? blackKImages[0] : sleepwearFringeVariants[0].src
+      const defaultGallery = blackKImages.length > 0 ? blackKImages : (sleepwearFringeVariants[0].gallery ?? [sleepwearFringeVariants[0].src])
+
+      return {
+        ...sleepwearFringeVariants[0],
+        id: 48049,
+        src: defaultSrc,
+        gallery: defaultGallery,
+        name: sleepwearFringeVariants[0].name,
+        price: sleepwearFringeVariants[0].price,
+        description: '',
+        colorOptions: sleepwearFringeVariants.map((item, index) => {
+          const label = index === 0 ? 'Black' : 'Red'
+          
+          let gallerySequence
+          if (label === 'Black') {
+            gallerySequence = defaultGallery
+          } else {
+            const fallbackSequence = sleepwearFringeVariants
+              .flatMap((variant) => variant.gallery ?? [variant.src])
+              .filter(Boolean)
+            const variantPrimarySequence = item.gallery?.length ? item.gallery : [item.src]
+            const mergedSequence = [...variantPrimarySequence, ...fallbackSequence]
+            gallerySequence = [...new Set(mergedSequence)]
+          }
+
+          return {
+            id: item.id,
+            label,
+            image: gallerySequence[0] ?? item.src,
+            gallery: gallerySequence,
+            swatchColor: sleepwearFringeSwatchColors[index] ?? '#d8bfd0',
+          }
+        }),
+      }
+    })()
+
     const filteredProducts = selectedProducts.filter(
-      (product) => !midnightBloomVariantIds.includes(product.id) && !bowLuxeVariantIds.includes(product.id),
+      (product) => !midnightBloomVariantIds.includes(product.id) && !bowLuxeVariantIds.includes(product.id) && !sleepwearFringeVariantIds.includes(product.id),
     )
     const productsWithCombinedVariants = [
       ...filteredProducts,
       ...(midnightBloomCombinedProduct ? [midnightBloomCombinedProduct] : []),
       ...(bowLuxeCombinedProduct ? [bowLuxeCombinedProduct] : []),
+      ...(sleepwearFringeCombinedProduct ? [sleepwearFringeCombinedProduct] : []),
     ]
 
     const uniqueProducts = productsWithCombinedVariants.filter(
@@ -1220,9 +1298,15 @@ function App() {
     )
 
     return uniqueProducts
-  }, [productsForLookup])
+  }, [productsForLookup, newImageModules])
   const lingerieCircleProductIds = useMemo(
-    () => new Set([...lingerieCircleProducts.map((product) => product.id), ...midnightBloomVariantIds, ...bowLuxeVariantIds]),
+    () => new Set([
+      ...lingerieCircleProducts.map((product) => product.id),
+      ...midnightBloomVariantIds,
+      ...bowLuxeVariantIds,
+      ...sleepwearFringeVariantIds,
+      47
+    ]),
     [lingerieCircleProducts],
   )
   const bodysuitsCircleProducts = useMemo(() => {
@@ -1252,43 +1336,8 @@ function App() {
       .map((targetId) => productsForLookup.find((product) => product.id === targetId))
       .filter(Boolean)
     const selectedProducts = [...selectedByNameProducts, ...selectedByIdProducts]
-    const sleepwearFringeVariants = sleepwearFringeVariantIds
-      .map((variantId) => productsForLookup.find((product) => product.id === variantId))
-      .filter(Boolean)
-    const sleepwearFringeCombinedProduct =
-      sleepwearFringeVariants.length > 0
-        ? {
-            ...sleepwearFringeVariants[0],
-            id: 48049,
-            src: sleepwearFringeVariants[0].src,
-            gallery: sleepwearFringeVariants[0].gallery,
-            name: sleepwearFringeVariants[0].name,
-            price: sleepwearFringeVariants[0].price,
-            description: '',
-            colorOptions: sleepwearFringeVariants.map((item, index) => {
-              const fallbackSequence = sleepwearFringeVariants
-                .flatMap((variant) => variant.gallery ?? [variant.src])
-                .filter(Boolean)
-              const variantPrimarySequence = item.gallery?.length ? item.gallery : [item.src]
-              const mergedSequence = [...variantPrimarySequence, ...fallbackSequence]
-              const uniqueSequence = [...new Set(mergedSequence)]
 
-              return {
-                id: item.id,
-                label: index === 0 ? 'Black' : 'Red',
-                image: item.src,
-                gallery: uniqueSequence,
-                swatchColor: sleepwearFringeSwatchColors[index] ?? '#d8bfd0',
-              }
-            }),
-          }
-        : null
-    const filteredProducts = selectedProducts.filter((product) => !sleepwearFringeVariantIds.includes(product.id))
-    const productsWithCombinedFringe = sleepwearFringeCombinedProduct
-      ? [...filteredProducts, sleepwearFringeCombinedProduct]
-      : filteredProducts
-
-    const uniqueProducts = productsWithCombinedFringe.filter(
+    const uniqueProducts = selectedProducts.filter(
       (product, index, array) => array.findIndex((item) => item.id === product.id) === index,
     )
 
@@ -1496,8 +1545,9 @@ function App() {
 
   const CollectionPage = ({ title, items, sourcePath }) => (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-      <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">{title}</h2>
-      <p className="mt-2 text-sm text-[#7d5d70]">Select any product card to open the product page.</p>
+      <Link to="/" className="inline-block">
+        <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl hover:text-[#9a3d6c] transition-colors">{title}</h2>
+      </Link>
       <div className="mt-5 sm:mt-8">
         <ProductGrid items={items} sourcePath={sourcePath} />
       </div>
@@ -1510,7 +1560,7 @@ function App() {
       const term = q.toLowerCase()
       const allSearchable = [...productsForLookup, ...lingerieCircleProducts, ...sleepwearCircleProducts]
       const uniqueItems = allSearchable.filter((item, index, self) => self.findIndex(t => t.id === item.id) === index)
-      return uniqueItems.filter(item => 
+      return uniqueItems.filter(item =>
         item.name.toLowerCase().includes(term) ||
         (item.description && item.description.toLowerCase().includes(term))
       )
@@ -1520,7 +1570,7 @@ function App() {
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 min-h-[50vh]">
         <h2 className="text-2xl font-semibold text-[#111] uppercase tracking-wider mb-2">Search Results</h2>
         <p className="text-sm text-gray-500 mb-8 tracking-wide">Showing results for "{q}"</p>
-        
+
         {results.length > 0 ? (
           <ProductGrid items={results} sourcePath={`/search?q=${encodeURIComponent(q)}`} />
         ) : (
@@ -1672,11 +1722,10 @@ function App() {
                       key={`piece-option-${index}`}
                       type="button"
                       onClick={() => setSelectedPreview(index)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${
-                        selectedPreview === index
-                          ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
-                          : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
-                      }`}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${selectedPreview === index
+                        ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
+                        : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
+                        }`}
                     >
                       {index === 0 ? 'Full Set' : `Single Piece ${index}`}
                     </button>
@@ -1741,37 +1790,37 @@ function App() {
           <span className="px-6">Free worldwide delivery over £50 spend</span>
         </div>
       </div>
-      <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200">
+      <header className="sticky top-0 z-50 w-full border-b border-[#fff]/10" style={{ backgroundColor: '#D25F6D' }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 relative">
           <div className="flex flex-1 items-center gap-5">
             <button type="button" onClick={() => setIsMobileMenuOpen(true)}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
             <button type="button" className="hover:opacity-70" onClick={() => { setIsSearchOpen(!isSearchOpen); setTimeout(() => document.getElementById('searchInput')?.focus(), 100); }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
           </div>
           <div className="flex flex-1 justify-center">
-            <Link to="/" className="text-xl md:text-2xl text-[#111] whitespace-nowrap" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
+            <Link to="/" className="text-xl md:text-2xl text-white whitespace-nowrap" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
           </div>
-          <div className="flex flex-1 justify-end items-center gap-5 text-[#111]">
+          <div className="flex flex-1 justify-end items-center gap-5 text-white">
             <Link to="/bag" className="relative flex items-center hover:opacity-70">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="2.5 6 21.5 6 19 16 5 16 2.5 6"></polyline>
                 <path d="M8 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
                 <path d="M16 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
               </svg>
-              {bagItems.length > 0 && <span className="absolute -top-1.5 -right-2 bg-[#111] text-white rounded-full w-[16px] h-[16px] flex items-center justify-center text-[10px] font-bold">{bagItems.length}</span>}
+              {bagItems.length > 0 && <span className="absolute -top-1.5 -right-2 bg-white text-[#D25F6D] rounded-full w-[16px] h-[16px] flex items-center justify-center text-[10px] font-bold">{bagItems.length}</span>}
             </Link>
           </div>
 
           {isSearchOpen && (
             <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-sm flex items-center gap-3 z-40">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <input 
+              <input
                 id="searchInput"
-                type="text" 
-                placeholder="Search products..." 
+                type="text"
+                placeholder="Search products..."
                 className="flex-1 outline-none text-[#111] text-sm tracking-wide bg-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1783,7 +1832,7 @@ function App() {
                 }}
               />
               <button type="button" onClick={() => setIsSearchOpen(false)} className="text-[#111] hover:opacity-70">
-                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
           )}
@@ -1792,40 +1841,42 @@ function App() {
         {isMobileMenuOpen && (
           <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
         )}
-        
+
         <div className={`fixed top-0 left-0 h-full w-[85%] sm:w-[400px] z-50 flex flex-col bg-white overflow-y-auto transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-            <div className="flex items-center justify-between px-6 py-5 bg-[#eaf1f4]">
-              <Link to="/" className="text-xl text-[#111]" style={brandWordmarkStyle} onClick={() => setIsMobileMenuOpen(false)}>Hush Sweety</Link>
-              <button type="button" className="p-1" onClick={() => setIsMobileMenuOpen(false)}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-            
-            <div className="flex-1 px-6 py-10 flex flex-col bg-white">
-              <div className="flex flex-col gap-8 text-[14px] tracking-wider font-normal uppercase text-[#111]">
-                {navItems.map((item) => (
+          <div className="flex items-center justify-between px-6 py-5 bg-[#eaf1f4]">
+            <Link to="/" className="text-xl text-[#111]" style={brandWordmarkStyle} onClick={() => setIsMobileMenuOpen(false)}>Hush Sweety</Link>
+            <button type="button" className="p-1" onClick={() => setIsMobileMenuOpen(false)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+
+          <div className="flex-1 px-6 py-10 flex flex-col bg-white">
+            <div className="flex flex-col gap-8 text-[14px] tracking-wider font-normal uppercase text-[#111]">
+              {navItems
+                .filter((item) => item.label !== 'SHOP')
+                .map((item) => (
                   <Link key={item.label} to={item.to} className="flex items-center justify-between" onClick={() => setIsMobileMenuOpen(false)}>
                     {item.label}
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                   </Link>
                 ))}
-              </div>
-              
-              <div className="mt-auto pt-10">
-                <div className="mb-6 border-t border-gray-200"></div>
-                <p className="text-[12px] mb-4 font-normal uppercase text-[#111]">Free Worldwide Shipping</p>
-                <div className="space-y-6 pb-2">
-                  <a href="#" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                    INSTAGRAM
-                  </a>
-                  <a href="#" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                    FACEBOOK
-                  </a>
-                </div>
+            </div>
+
+            <div className="mt-auto pt-10">
+              <div className="mb-6 border-t border-gray-200"></div>
+              <p className="text-[12px] mb-4 font-normal uppercase text-[#111]">Free Worldwide Shipping</p>
+              <div className="space-y-6 pb-2">
+                <a href="https://www.instagram.com/hushsweety__?igsh=cm1oNTA1ZWJzbWIw&utm_source=qr" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                  INSTAGRAM
+                </a>
+                <a href="https://www.tiktok.com/@hushsweeety" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
+                  TIK TOK
+                </a>
               </div>
             </div>
+          </div>
         </div>
       </header>
 
@@ -1836,7 +1887,7 @@ function App() {
           path="/"
           element={
             <>
-              <section className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
+              <section id="hero" className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
                 <article className="rounded-3xl bg-gradient-to-r from-[#7d2f56] to-[#b14f7f] px-6 py-5 text-white shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f8d8ea]">Member Offer</p>
                   <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">
@@ -1901,21 +1952,18 @@ function App() {
 
               <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
                 <div className="mb-6 flex items-end justify-between">
-                  <h2 className="text-3xl font-semibold text-[#3f1f34]">Featured Lingerie Sets</h2>
+                  <h2 className="text-3xl font-semibold text-[#3f1f34]">Discover our Collection</h2>
                   <Link to="/lingerie-sets" className="text-sm font-semibold text-[#9a3d6c] hover:text-[#7d2f56]">View all products</Link>
                 </div>
                 <ProductGrid items={featuredProducts} sourcePath="/lingerie-sets" />
               </section>
 
-              <section className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-3 lg:px-8">
-                <article className="overflow-hidden rounded-3xl bg-white ring-1 ring-[#efdfe8] lg:col-span-2">
-                  <img src={featureImage} alt="Delicate lace details" className="h-[320px] w-full object-cover sm:h-[420px]" />
-                </article>
-                <article className="rounded-3xl bg-[#7d2f56] p-8 text-white">
+              <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+                <article className="rounded-3xl bg-[#7d2f56] p-8 text-white text-center sm:p-12 md:p-16">
                   <p className="text-xs uppercase tracking-[0.2em] text-[#f8d8ea]">Online Exclusive</p>
-                  <h3 className="mt-3 text-3xl font-semibold leading-tight">Limited-Time Picks from Our Bestseller Edit</h3>
-                  <p className="mt-4 text-sm leading-7 text-[#f3d6e6]">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
-                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">Shop Bestsellers</Link>
+                  <h3 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Limited-Time Picks from Our Bestseller Edit</h3>
+                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#f3d6e6] sm:text-base sm:leading-8">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
+                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#7d2f56] transition hover:bg-[#fff0f7] hover:scale-105 transform">Shop Bestsellers</Link>
                 </article>
               </section>
             </>
@@ -1940,7 +1988,7 @@ function App() {
               <div className="space-y-6 text-[#6e5362] text-lg leading-relaxed">
                 <p>At Hush Sweety, lingerie isn’t just what you wear. It’s how you show up.</p>
                 <p>Soft, bold, a little playful. Made to hug you in all the right places and remind you that confidence can be quiet or a little naughty.</p>
-                <p>For slow mornings, late nights, and everything in between.<br/>Wear it for you. Always.</p>
+                <p>For slow mornings, late nights, and everything in between.<br />Wear it for you. Always.</p>
                 <p className="text-xl font-bold text-[#7d2f56] pt-8">Hush Sweety</p>
               </div>
             </section>
@@ -2037,7 +2085,7 @@ function App() {
               <h2 className="text-3xl font-semibold text-[#3f1f34] mb-8">Return & Refund Policy (UK Customers)</h2>
               <div className="space-y-6 text-[#6e5362] text-sm sm:text-base leading-relaxed">
                 <p>At HushSweety, we want you to be happy with your purchase. This policy explains your rights and how returns and refunds work for UK customers.</p>
-                
+
                 <h3 className="text-xl font-semibold text-[#3f1f34] mt-8">1. Your Right to Cancel (Online Orders)</h3>
                 <p>Under the Consumer Contracts Regulations 2013, you have the right to cancel your order.</p>
                 <ul className="list-disc pl-6 space-y-1">
@@ -2230,7 +2278,7 @@ function App() {
               <h2 className="text-3xl font-semibold text-[#3f1f34] mb-8 text-center">Contact Us</h2>
               <div className="space-y-6 text-[#6e5362] text-sm sm:text-base leading-relaxed bg-white p-8 rounded-2xl ring-1 ring-[#ebdde5]">
                 <p>If you have any questions or need to get in touch with us regarding your order, returns, or our policies, please use the contact details below.</p>
-                
+
                 <div className="space-y-4 mt-6">
                   <div>
                     <h3 className="text-lg font-semibold text-[#3f1f34]">General Support & Order Cancellations</h3>
@@ -2258,11 +2306,9 @@ function App() {
             <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns worldwide.</p>
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">Shop</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-[#5d3a4e]">About Us</p>
             <div className="mt-3 grid gap-2">
-              <Link to="/lingerie-sets" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Lingerie Sets</Link>
-              <Link to="/sleepwear" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Sleepwear</Link>
-              <Link to="/wrap-set" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">Wrap set</Link>
+              <a href="mailto:support@hushsweety.com" className="text-left text-sm text-[#7b5a6e] hover:text-[#9a3d6c]">support@hushsweety.com</a>
             </div>
           </div>
           <div>
