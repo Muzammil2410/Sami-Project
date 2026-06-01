@@ -28,7 +28,7 @@ const lingerieCircleProductNames = [
   'Love Spell Set',
   'Sculpt Bodysuit',
 ]
-const lingerieCircleExtraProductIds = [22, 27, 1312, 1313]
+const lingerieCircleExtraProductIds = [22, 27, 1312, 1313, 1314]
 const midnightBloomVariantIds = [19, 22, 27]
 const bowLuxeVariantIds = [40, 41]
 const bowLuxeSwatchColors = ['#000000', '#dc2626']
@@ -84,7 +84,7 @@ const productOverrides = {
   1021: { name: 'Love Story Set', price: '£64.99' },
 }
 
-const SIZED_PRODUCT_IDS = [1005, 1008, 55, 1003, 1310, 48049, 1006, 1001]
+
 
 const applyProductOverride = (product) => {
   const override = productOverrides[product.id]
@@ -624,14 +624,11 @@ function App() {
     if (imageLL) {
       customProducts.push({
         id: 1007,
-        src: imageBB?.src ?? imageLL.src,
-        gallery: imageAA && imageBB ? [imageBB.src, imageAA.src, imageLL.src] : [imageLL.src],
+        src: imageLL.src,
+        gallery: [imageLL.src],
         name: 'Luxe Set 1007',
         price: '£38.00',
-        description:
-          imageAA && imageBB
-            ? 'Combined product gallery for Luxe Set 1007. Scroll through 3 preview images for full product angles.'
-            : 'Single product preview for Luxe Set 1007.',
+        description: 'Single product preview for Luxe Set 1007.',
       })
     }
 
@@ -785,6 +782,17 @@ function App() {
             swatchColor: '#dc2626',
           }] : [])
         ]
+      })
+    }
+
+    if (imageAA && imageBB) {
+      customProducts.push({
+        id: 1314,
+        src: imageAA.src,
+        gallery: [imageAA.src, imageBB.src],
+        name: 'Midnight Desire',
+        price: '£24.99',
+        description: '',
       })
     }
 
@@ -1261,7 +1269,7 @@ function App() {
         description: '',
         colorOptions: sleepwearFringeVariants.map((item, index) => {
           const label = index === 0 ? 'Black' : 'Red'
-          
+
           let gallerySequence
           if (label === 'Black') {
             gallerySequence = defaultGallery
@@ -1724,27 +1732,24 @@ function App() {
                 </div>
               </div>
             ) : null}
-            {SIZED_PRODUCT_IDS.includes(product.id) && (
-              <div className="mt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Size</p>
-                <div className="flex flex-wrap gap-2">
-                  {['S', 'M', 'L', 'XL'].map((size) => (
-                    <button
-                      key={`size-option-${size}`}
-                      type="button"
-                      onClick={() => setSelectedSize(size)}
-                      className={`h-10 w-12 rounded-lg border-2 flex items-center justify-center text-sm font-semibold transition ${
-                        selectedSize === size
-                          ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
-                          : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Size</p>
+              <div className="flex flex-wrap gap-2">
+                {['S', 'M', 'L', 'XL'].map((size) => (
+                  <button
+                    key={`size-option-${size}`}
+                    type="button"
+                    onClick={() => setSelectedSize(size)}
+                    className={`h-10 w-12 rounded-lg border-2 flex items-center justify-center text-sm font-semibold transition ${selectedSize === size
+                      ? 'border-[#7d2f56] bg-[#7d2f56] text-white'
+                      : 'border-[#d8bfd0] text-[#7d2f56] hover:bg-[#fff0f7]'
                       }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
             {showSetOfferNotice ? (
               <p className="mt-4 rounded-xl bg-[#f6e7ef] px-4 py-3 text-sm font-semibold text-[#7d2f56]">
                 Love Story Set is shown first as the full set. You can also select single pieces from the options below.
@@ -1780,7 +1785,7 @@ function App() {
                     price: activeProductPrice,
                     src: productGallery[0],
                     selectedColor: colorOptions[selectedColorIndex]?.label,
-                    selectedSize: SIZED_PRODUCT_IDS.includes(product.id) ? selectedSize : null
+                    selectedSize: selectedSize
                   })
                 }
                 className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
@@ -1796,7 +1801,7 @@ function App() {
                     price: activeProductPrice,
                     src: productGallery[0],
                     selectedColor: colorOptions[selectedColorIndex]?.label,
-                    selectedSize: SIZED_PRODUCT_IDS.includes(product.id) ? selectedSize : null
+                    selectedSize: selectedSize
                   })
                 }
                 className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
