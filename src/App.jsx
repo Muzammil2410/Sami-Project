@@ -1934,10 +1934,10 @@ function App() {
                 <article className="rounded-3xl bg-gradient-to-r from-[#7d2f56] to-[#b14f7f] px-6 py-5 text-white shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f8d8ea]">Member Offer</p>
                   <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">
-                    Sign up to emails and get 15% off on your first order
+                    Join our email list and enjoy 15% off your first order.
                   </h2>
                   <p className="mt-3 text-sm leading-6 text-[#f7e4ee]">
-                    Join our email list for early access to new drops, exclusive promotions, and your welcome 15% discount on your first order.
+                    ✨ Get early access to new drops, exclusive offers, and member-only perks.
                   </p>
                   <Link to="/checkout" className="mt-5 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#7d2f56]">
                     Sign Up Now
