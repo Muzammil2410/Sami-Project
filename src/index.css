@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+@layer base {
+  html {
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    overflow-x: clip;
+    min-width: 320px;
+  }
+
+  #root {
+    overflow-x: clip;
+    min-height: 100dvh;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .product-image-frame {
+    line-height: 0;
+  }
+
+  .product-image-frame img.product-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .product-image-frame--natural img.product-image {
+    width: 100%;
+    max-height: min(80vh, 800px);
+  }
+
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

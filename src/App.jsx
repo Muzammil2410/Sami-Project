@@ -1531,14 +1531,28 @@ function App() {
     return () => { document.body.style.overflow = 'unset' }
   }, [isMobileMenuOpen])
 
+  const ProductImage = ({ src, alt, frameClassName = '', imageClassName = '' }) => (
+    <div className={`product-image-frame flex items-center justify-center overflow-hidden bg-[#faf6f8] ${frameClassName}`}>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        className={`product-image ${imageClassName}`}
+      />
+    </div>
+  )
+
   const ProductGrid = ({ items, sourcePath }) => (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
       {items.map((product) => (
         <article key={product.id} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#efdfe8]">
           <Link to={`/product/${product.id}`} state={{ from: sourcePath }} className="block">
-            <div className="aspect-[3/4] overflow-hidden sm:aspect-[4/5]">
-              <img src={product.src} alt={product.name} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
-            </div>
+            <ProductImage
+              src={product.src}
+              alt={product.name}
+              frameClassName="aspect-[3/4] w-full sm:aspect-[4/5]"
+            />
           </Link>
           <div className="p-2.5 sm:p-4">
             <p className="text-[11px] uppercase tracking-wider text-[#8f6580] sm:text-sm sm:normal-case sm:tracking-normal">Bestseller</p>
@@ -1590,8 +1604,8 @@ function App() {
 
     return (
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 min-h-[50vh]">
-        <h2 className="text-2xl font-semibold text-[#111] uppercase tracking-wider mb-2">Search Results</h2>
-        <p className="text-sm text-gray-500 mb-8 tracking-wide">Showing results for "{q}"</p>
+        <h2 className="mb-2 text-xl font-semibold uppercase tracking-wider text-[#111] sm:text-2xl">Search Results</h2>
+        <p className="mb-6 break-words text-sm tracking-wide text-gray-500 sm:mb-8">Showing results for &ldquo;{q}&rdquo;</p>
 
         {results.length > 0 ? (
           <ProductGrid items={results} sourcePath={`/search?q=${encodeURIComponent(q)}`} />
@@ -1659,8 +1673,8 @@ function App() {
 
     if (!product) {
       return (
-        <section className="mx-auto max-w-3xl px-6 py-12 text-center">
-          <h2 className="text-3xl font-semibold text-[#3f1f34]">Product not found</h2>
+        <section className="mx-auto max-w-3xl px-4 py-10 text-center sm:px-6 sm:py-12">
+          <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">Product not found</h2>
           <Link to={backPath} className="mt-6 inline-block rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white">
             {backLabel}
           </Link>
@@ -1670,15 +1684,15 @@ function App() {
 
     return (
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <Link to={backPath} className="mb-6 inline-block rounded-full border border-[#dcc5d1] px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-white">
+        <Link to={backPath} className="mb-4 inline-block rounded-full border border-[#dcc5d1] px-3 py-2 text-[11px] font-semibold uppercase tracking-wider hover:bg-white sm:mb-6 sm:px-4 sm:text-xs">
           {backLabel}
         </Link>
         <article className="grid gap-5 rounded-3xl bg-white p-4 ring-1 ring-[#ead9e4] sm:gap-8 sm:p-6 md:grid-cols-2 md:p-8">
-          <div>
-            <img
+          <div className="min-w-0">
+            <ProductImage
               src={productGallery[selectedPreview] ?? product.src}
               alt={product.name}
-              className="aspect-[4/5] w-full rounded-2xl object-cover"
+              frameClassName="product-image-frame--natural w-full rounded-2xl py-1 sm:py-2"
             />
             {productGallery.length > 1 ? (
               <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
@@ -1687,9 +1701,13 @@ function App() {
                     key={preview}
                     type="button"
                     onClick={() => setSelectedPreview(index)}
-                    className={`h-16 w-12 shrink-0 overflow-hidden rounded-lg border sm:h-20 sm:w-16 ${selectedPreview === index ? 'border-[#7d2f56]' : 'border-[#dcc5d1]'}`}
+                    className={`shrink-0 overflow-hidden rounded-lg border ${selectedPreview === index ? 'border-[#7d2f56]' : 'border-[#dcc5d1]'}`}
                   >
-                    <img src={preview} alt={`${product.name} preview ${index + 1}`} className="h-full w-full object-cover" />
+                    <ProductImage
+                      src={preview}
+                      alt={`${product.name} preview ${index + 1}`}
+                      frameClassName="h-20 w-16 sm:h-24 sm:w-20"
+                    />
                   </button>
                 ))}
               </div>
@@ -1823,7 +1841,7 @@ function App() {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-      <div className="overflow-hidden bg-[#7d2f56] py-2 text-sm font-semibold text-white">
+      <div className="overflow-hidden bg-[#7d2f56] py-1.5 text-xs font-semibold text-white sm:py-2 sm:text-sm">
         <div
           className="flex w-max whitespace-nowrap"
           style={{ animation: 'deliveryStripMarquee 18s linear infinite' }}
@@ -1834,22 +1852,22 @@ function App() {
           <span className="px-6">Free worldwide delivery over £50 spend</span>
         </div>
       </div>
-      <header className="sticky top-0 z-50 w-full border-b border-[#fff]/10" style={{ backgroundColor: '#D25F6D' }}>
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 relative">
-          <div className="flex flex-1 items-center gap-5">
-            <button type="button" onClick={() => setIsMobileMenuOpen(true)}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      <header className="safe-top sticky top-0 z-50 w-full border-b border-[#fff]/10" style={{ backgroundColor: '#D25F6D' }}>
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4 sm:py-4 md:px-8">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 md:gap-5">
+            <button type="button" className="shrink-0 p-1" aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)}>
+              <svg className="h-6 w-6 sm:h-[26px] sm:w-[26px]" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <button type="button" className="hover:opacity-70" onClick={() => { setIsSearchOpen(!isSearchOpen); setTimeout(() => document.getElementById('searchInput')?.focus(), 100); }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <button type="button" className="shrink-0 p-1 hover:opacity-70" aria-label="Search" onClick={() => { setIsSearchOpen(!isSearchOpen); setTimeout(() => document.getElementById('searchInput')?.focus(), 100); }}>
+              <svg className="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
           </div>
-          <div className="flex flex-1 justify-center">
-            <Link to="/" className="text-xl md:text-2xl text-white whitespace-nowrap" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
+          <div className="flex min-w-0 flex-1 justify-center px-1">
+            <Link to="/" className="max-w-[46vw] truncate text-center text-base text-white sm:max-w-none sm:text-xl sm:whitespace-nowrap md:text-2xl" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
           </div>
-          <div className="flex flex-1 justify-end items-center gap-5 text-white">
-            <Link to="/bag" className="relative flex items-center hover:opacity-70">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-white sm:gap-4 md:gap-5">
+            <Link to="/bag" className="relative flex shrink-0 items-center p-1 hover:opacity-70" aria-label="Shopping bag">
+              <svg className="h-6 w-6 sm:h-[26px] sm:w-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="2.5 6 21.5 6 19 16 5 16 2.5 6"></polyline>
                 <path d="M8 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
                 <path d="M16 16c0 1.5 1 2 2 2s2-.5 2-2"></path>
@@ -1859,7 +1877,7 @@ function App() {
           </div>
 
           {isSearchOpen && (
-            <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-4 shadow-sm flex items-center gap-3 z-40">
+            <div className="absolute top-full left-0 z-40 flex w-full items-center gap-2 border-b border-gray-200 bg-white p-3 shadow-sm sm:gap-3 sm:p-4">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               <input
                 id="searchInput"
@@ -1886,7 +1904,7 @@ function App() {
           <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setIsMobileMenuOpen(false)}></div>
         )}
 
-        <div className={`fixed top-0 left-0 h-full w-[85%] sm:w-[400px] z-50 flex flex-col bg-white overflow-y-auto transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`fixed top-0 left-0 z-50 flex h-full w-[min(85vw,400px)] max-w-full flex-col overflow-y-auto bg-white transition-transform duration-300 ease-in-out safe-top safe-bottom ${isMobileMenuOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'}`}>
           <div className="flex items-center justify-between px-6 py-5 bg-[#eaf1f4]">
             <Link to="/" className="text-xl text-[#111]" style={brandWordmarkStyle} onClick={() => setIsMobileMenuOpen(false)}>Hush Sweety</Link>
             <button type="button" className="p-1" onClick={() => setIsMobileMenuOpen(false)}>
@@ -1935,10 +1953,10 @@ function App() {
           path="/"
           element={
             <>
-              <section id="hero" className="mx-auto max-w-7xl px-6 pt-6 lg:px-8">
-                <article className="rounded-3xl bg-gradient-to-r from-[#7d2f56] to-[#b14f7f] px-6 py-5 text-white shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f8d8ea]">Member Offer</p>
-                  <h2 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">
+              <section id="hero" className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+                <article className="rounded-2xl bg-gradient-to-r from-[#7d2f56] to-[#b14f7f] px-4 py-4 text-white shadow-sm sm:rounded-3xl sm:px-6 sm:py-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f8d8ea] sm:text-xs sm:tracking-[0.2em]">Member Offer</p>
+                  <h2 className="mt-2 text-xl font-semibold leading-tight sm:text-2xl md:text-3xl">
                     Join our email list and enjoy 15% off your first order.
                   </h2>
                   <p className="mt-3 text-sm leading-6 text-[#f7e4ee]">
@@ -1950,15 +1968,15 @@ function App() {
                 </article>
               </section>
 
-              <section id="collections" className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-5 lg:px-8">
-                <article className="flex flex-col justify-center rounded-3xl bg-[#fff] p-8 shadow-sm ring-1 ring-[#f2e6ee] lg:col-span-3">
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#b14f7f]">Spring Collection 2026</p>
-                  <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#3f1f34] sm:text-5xl"></h1>
+              <section id="collections" className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:gap-6 sm:px-6 sm:py-10 lg:grid-cols-5 lg:px-8">
+                <article className="flex flex-col justify-center rounded-2xl bg-[#fff] p-4 shadow-sm ring-1 ring-[#f2e6ee] sm:rounded-3xl sm:p-6 lg:col-span-3 lg:p-8">
+                  <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b14f7f] sm:mb-4 sm:text-xs sm:tracking-[0.24em]">Spring Collection 2026</p>
+                  <h1 className="max-w-xl text-3xl font-semibold leading-tight text-[#3f1f34] sm:text-4xl md:text-5xl"></h1>
                   {heroSectionVideo ? (
-                    <div className="mt-5 overflow-hidden rounded-2xl ring-1 ring-[#ead9e4]">
+                    <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-[#ead9e4] sm:mt-5">
                       <video
                         src={heroSectionVideo}
-                        className="h-[320px] w-full object-cover sm:h-[420px]"
+                        className="aspect-[9/16] max-h-[min(70vh,420px)] w-full object-cover sm:aspect-video sm:max-h-none sm:h-[320px] md:h-[420px]"
                         autoPlay
                         muted
                         loop
@@ -1969,8 +1987,8 @@ function App() {
                     </div>
                   ) : null}
                 </article>
-                <article className="rounded-3xl bg-[#f1e6ed] p-5 lg:col-span-2">
-                  <div className="grid grid-cols-2 gap-x-5 gap-y-6">
+                <article className="rounded-2xl bg-[#f1e6ed] p-3 sm:rounded-3xl sm:p-5 lg:col-span-2">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-x-5 sm:gap-y-6 md:grid-cols-3 lg:grid-cols-2">
                     {heroCategoryCards.map((item) => (
                       <Link
                         key={item.label}
@@ -1978,22 +1996,42 @@ function App() {
                         state={{ from: item.sourcePath }}
                         className="flex flex-col items-center text-center"
                       >
-                        <div className="h-28 w-28 overflow-hidden rounded-full bg-white ring-1 ring-[#ead9e4] sm:h-32 sm:w-32">
+                        <div className="h-20 w-20 overflow-hidden rounded-full bg-white ring-1 ring-[#ead9e4] sm:h-28 sm:w-28 md:h-32 md:w-32">
                           <img src={item.image} alt={item.label} className="h-full w-full object-cover" />
                         </div>
-                        <p className="mt-2 text-sm font-medium text-[#3f1f34] sm:text-base">{item.label}</p>
+                        <p className="mt-1.5 text-xs font-medium text-[#3f1f34] sm:mt-2 sm:text-sm md:text-base">{item.label}</p>
                       </Link>
                     ))}
                   </div>
                 </article>
               </section>
 
-              <section className="mx-auto max-w-7xl px-6 pb-8 lg:px-8">
-                <div className="mb-6">
-                  <h2 className="text-xl font-semibold uppercase tracking-wider text-[#7d2f56]">Customer Reviews</h2>
-                  <p className="text-sm text-[#7b5a6e]">What our community is saying about Hush Sweety</p>
+              <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+                <div className="mb-4 flex flex-col gap-2 sm:mb-6 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                  <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">Discover our Collection</h2>
+                  <Link to="/lingerie-sets" className="text-sm font-semibold text-[#9a3d6c] hover:text-[#7d2f56]">View all products</Link>
                 </div>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <ProductGrid items={featuredProducts} sourcePath="/lingerie-sets" />
+              </section>
+
+              <section id="reviews" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+                <div className="mb-5 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold uppercase tracking-wider text-[#7d2f56] sm:text-2xl">Customer Reviews</h2>
+                    <p className="mt-1 text-sm leading-relaxed text-[#7b5a6e] sm:text-base">What our community is saying about Hush Sweety</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-[#efdfe8] sm:px-4 sm:py-2">
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <svg key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ fill: '#fbbf24' }} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-xs font-semibold text-[#7d2f56] sm:text-sm">5.0</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
                   {[
                     {
                       name: "Sarah M.",
@@ -2017,45 +2055,37 @@ function App() {
                       verified: true
                     }
                   ].map((item, index) => (
-                    <article key={index} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-[#efdfe8] flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-semibold text-[#3f1f34]">{item.name}</span>
+                    <article key={index} className="flex h-full flex-col justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-[#efdfe8] sm:p-5 lg:p-6">
+                      <div className="min-w-0">
+                        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            <span className="text-sm font-semibold text-[#3f1f34] sm:text-base">{item.name}</span>
                             {item.verified && (
-                              <span className="flex items-center gap-0.5 rounded bg-[#fff0f7] px-1.5 py-0.5 text-[10px] font-medium text-[#7d2f56] ring-1 ring-[#7d2f56]/10">
+                              <span className="inline-flex shrink-0 items-center rounded bg-[#fff0f7] px-1.5 py-0.5 text-[10px] font-medium text-[#7d2f56] ring-1 ring-[#7d2f56]/10 sm:text-xs">
                                 Verified
                               </span>
                             )}
                           </div>
-                          <span className="text-xs text-[#a37f95]">{item.date}</span>
+                          <span className="shrink-0 text-xs text-[#a37f95] sm:text-sm">{item.date}</span>
                         </div>
-                        <div className="flex gap-0.5 mb-3">
+                        <div className="mb-3 flex gap-0.5" aria-label={`${item.rating} out of 5 stars`}>
                           {[...Array(item.rating)].map((_, i) => (
-                            <svg key={i} className="h-4 w-4" style={{ fill: '#fbbf24' }} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <svg key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ fill: '#fbbf24' }} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                           ))}
                         </div>
-                        <p className="text-sm leading-relaxed text-[#6e5362]">"{item.review}"</p>
+                        <p className="text-sm leading-relaxed text-[#6e5362] sm:text-[15px] sm:leading-7">&ldquo;{item.review}&rdquo;</p>
                       </div>
                     </article>
                   ))}
                 </div>
               </section>
 
-              <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
-                <div className="mb-6 flex items-end justify-between">
-                  <h2 className="text-3xl font-semibold text-[#3f1f34]">Discover our Collection</h2>
-                  <Link to="/lingerie-sets" className="text-sm font-semibold text-[#9a3d6c] hover:text-[#7d2f56]">View all products</Link>
-                </div>
-                <ProductGrid items={featuredProducts} sourcePath="/lingerie-sets" />
-              </section>
-
-              <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-                <article className="rounded-3xl bg-[#7d2f56] p-8 text-white text-center sm:p-12 md:p-16">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[#f8d8ea]">Online Exclusive</p>
-                  <h3 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Limited-Time Picks from Our Bestseller Edit</h3>
+              <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+                <article className="rounded-2xl bg-[#7d2f56] p-5 text-center text-white sm:rounded-3xl sm:p-8 md:p-12 lg:p-16">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-[#f8d8ea] sm:text-xs sm:tracking-[0.2em]">Online Exclusive</p>
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">Limited-Time Picks from Our Bestseller Edit</h3>
                   <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#f3d6e6] sm:text-base sm:leading-8">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
                   <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#7d2f56] transition hover:bg-[#fff0f7] hover:scale-105 transform">Shop Bestsellers</Link>
                 </article>
@@ -2077,9 +2107,9 @@ function App() {
         <Route
           path="/about-us"
           element={
-            <section className="mx-auto max-w-3xl px-6 py-14 text-center lg:px-8">
-              <h2 className="text-4xl font-semibold text-[#3f1f34] mb-8">About Hush Sweety</h2>
-              <div className="space-y-6 text-[#6e5362] text-lg leading-relaxed">
+            <section className="mx-auto max-w-3xl px-4 py-10 text-center sm:px-6 sm:py-14 lg:px-8">
+              <h2 className="mb-6 text-3xl font-semibold text-[#3f1f34] sm:mb-8 sm:text-4xl">About Hush Sweety</h2>
+              <div className="space-y-5 text-base leading-relaxed text-[#6e5362] sm:space-y-6 sm:text-lg">
                 <p>At Hush Sweety, lingerie isn’t just what you wear. It’s how you show up.</p>
                 <p>Soft, bold, a little playful. Made to hug you in all the right places and remind you that confidence can be quiet or a little naughty.</p>
                 <p>For slow mornings, late nights, and everything in between.<br />Wear it for you. Always.</p>
@@ -2091,17 +2121,21 @@ function App() {
         <Route
           path="/bag"
           element={
-            <section className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-              <h2 className="text-3xl font-semibold text-[#3f1f34]">My Bag</h2>
+            <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+              <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">My Bag</h2>
               {bagItems.length === 0 ? (
                 <p className="mt-3 text-[#6e5362]">Your bag is empty. Add a product from the collection.</p>
               ) : (
                 <div className="mt-6 grid gap-4">
                   {bagItems.map((item, index) => (
-                    <article key={`${item.id}-${index}`} className="flex items-center gap-4 flex-wrap sm:flex-nowrap rounded-2xl bg-white p-4 ring-1 ring-[#ebdde5]">
-                      <img src={item.src} alt={item.name} className="h-24 w-20 shrink-0 rounded-lg object-cover sm:h-32 sm:w-24" />
-                      <div className="flex-1">
-                        <p className="text-lg font-semibold text-[#3f1f34]">{item.name}</p>
+                    <article key={`${item.id}-${index}`} className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-[#ebdde5] sm:flex-row sm:items-center sm:gap-4">
+                      <ProductImage
+                        src={item.src}
+                        alt={item.name}
+                        frameClassName="h-28 w-24 shrink-0 self-start rounded-lg sm:h-32 sm:w-24"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-base font-semibold text-[#3f1f34] sm:text-lg">{item.name}</p>
                         {item.selectedColor ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Color: {item.selectedColor}</p> : null}
                         {item.selectedSize ? <p className="mt-0.5 text-sm font-medium text-[#7d2f56]">Size: {item.selectedSize}</p> : null}
                         <div className="mt-1 flex items-center gap-2">
@@ -2115,9 +2149,9 @@ function App() {
                   ))}
                 </div>
               )}
-              <div className="mt-8 flex gap-3">
-                <Link to="/lingerie-sets" className="rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7]">Continue Shopping</Link>
-                <Link to="/checkout" className="rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]">Checkout</Link>
+              <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
+                <Link to="/lingerie-sets" className="w-full rounded-full border border-[#d8bfd0] px-5 py-3 text-center text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto sm:py-2.5">Continue Shopping</Link>
+                <Link to="/checkout" className="w-full rounded-full bg-[#7d2f56] px-5 py-3 text-center text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto sm:py-2.5">Checkout</Link>
               </div>
             </section>
           }
@@ -2125,14 +2159,14 @@ function App() {
         <Route
           path="/checkout"
           element={
-            <section className="mx-auto max-w-3xl px-6 py-10 lg:px-8">
-              <h2 className="text-3xl font-semibold text-[#3f1f34]">Customer Details</h2>
+            <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+              <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">Customer Details</h2>
               <p className="mt-2 text-sm text-[#6e5362]">
                 Complete details for {checkoutProduct ? checkoutProduct.name : 'your selected products'}
                 {checkoutProduct?.selectedColor ? ` (${checkoutProduct.selectedColor})` : ''}
                 {checkoutProduct?.selectedSize ? ` - Size: ${checkoutProduct.selectedSize}` : ''}.
               </p>
-              <form onSubmit={submitCustomerDetails} className="mt-6 space-y-4 rounded-3xl bg-white p-6 ring-1 ring-[#ead9e4]">
+              <form onSubmit={submitCustomerDetails} className="mt-6 space-y-4 rounded-2xl bg-white p-4 ring-1 ring-[#ead9e4] sm:rounded-3xl sm:p-6">
                 {[
                   { key: 'fullName', label: 'Full Name', type: 'text' },
                   { key: 'email', label: 'Email', type: 'email' },
@@ -2160,7 +2194,7 @@ function App() {
                     className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2 outline-none focus:border-[#b9638c]"
                   />
                 </label>
-                <button type="submit" className="rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]">
+                <button type="submit" className="w-full rounded-full bg-[#7d2f56] px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto sm:py-2.5">
                   Confirm Buy Now
                 </button>
               </form>
@@ -2170,8 +2204,8 @@ function App() {
         <Route
           path="/thank-you"
           element={
-            <section className="mx-auto max-w-3xl px-6 py-14 text-center lg:px-8">
-              <h2 className="text-4xl font-semibold text-[#3f1f34]">Thank you for your order</h2>
+            <section className="mx-auto max-w-3xl px-4 py-10 text-center sm:px-6 sm:py-14 lg:px-8">
+              <h2 className="text-3xl font-semibold text-[#3f1f34] sm:text-4xl">Thank you for your order</h2>
               <p className="mt-4 text-[#6e5362]">Your customer details were submitted successfully. We will contact you shortly.</p>
               <Link to="/" className="mt-7 inline-block rounded-full bg-[#7d2f56] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242]">Back to Home</Link>
             </section>
@@ -2180,9 +2214,9 @@ function App() {
         <Route
           path="/return-and-refund-policy"
           element={
-            <section className="mx-auto max-w-3xl px-6 py-14 lg:px-8">
-              <h2 className="text-3xl font-semibold text-[#3f1f34] mb-8">Return & Refund Policy (UK Customers)</h2>
-              <div className="space-y-6 text-[#6e5362] text-sm sm:text-base leading-relaxed">
+            <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+              <h2 className="mb-6 text-2xl font-semibold text-[#3f1f34] sm:mb-8 sm:text-3xl">Return & Refund Policy (UK Customers)</h2>
+              <div className="space-y-6 break-words text-sm leading-relaxed text-[#6e5362] sm:text-base">
                 <p>At HushSweety, we want you to be happy with your purchase. This policy explains your rights and how returns and refunds work for UK customers.</p>
 
                 <h3 className="text-xl font-semibold text-[#3f1f34] mt-8">1. Your Right to Cancel (Online Orders)</h3>
@@ -2260,9 +2294,9 @@ function App() {
         <Route
           path="/terms-of-service"
           element={
-            <section className="mx-auto max-w-4xl px-6 py-14 lg:px-8">
-              <h2 className="text-3xl font-semibold text-[#3f1f34] mb-8">Terms of Service</h2>
-              <div className="space-y-6 text-[#6e5362] text-sm sm:text-base leading-relaxed">
+            <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+              <h2 className="mb-6 text-2xl font-semibold text-[#3f1f34] sm:mb-8 sm:text-3xl">Terms of Service</h2>
+              <div className="space-y-6 break-words text-sm leading-relaxed text-[#6e5362] sm:text-base">
                 <h3 className="text-xl font-semibold text-[#3f1f34] uppercase tracking-wide">OVERVIEW</h3>
                 <p>Welcome to HushSweety! The terms “we”, “us” and “our” refer to HushSweety. HushSweety operates this store and website, including all related information, content, features, tools, products and services in order to provide you, the customer, with a curated shopping experience (the “Services”). HushSweety is powered by Shopify, which enables us to provide the Services to you.</p>
                 <p>The below terms and conditions, together with any policies referenced herein (these “Terms of Service” or “Terms”) describe your rights and responsibilities when you use the Services.</p>
@@ -2373,9 +2407,9 @@ function App() {
         <Route
           path="/contact-us"
           element={
-            <section className="mx-auto max-w-3xl px-6 py-14 lg:px-8">
-              <h2 className="text-3xl font-semibold text-[#3f1f34] mb-8 text-center">Contact Us</h2>
-              <div className="space-y-6 text-[#6e5362] text-sm sm:text-base leading-relaxed bg-white p-8 rounded-2xl ring-1 ring-[#ebdde5]">
+            <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+              <h2 className="mb-6 text-center text-2xl font-semibold text-[#3f1f34] sm:mb-8 sm:text-3xl">Contact Us</h2>
+              <div className="space-y-6 break-words rounded-2xl bg-white p-4 text-sm leading-relaxed text-[#6e5362] ring-1 ring-[#ebdde5] sm:p-8 sm:text-base">
                 <p>If you have any questions or need to get in touch with us regarding your order, returns, or our policies, please use the contact details below.</p>
 
                 <div className="space-y-4 mt-6">
@@ -2398,8 +2432,8 @@ function App() {
       </Routes>
 
 
-      <footer className="mt-8 border-t border-[#e7d9e3] bg-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <footer className="safe-bottom mt-8 border-t border-[#e7d9e3] bg-white">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-10 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
           <div>
             <Link to="/" className="text-lg text-[#7f395b]" style={brandWordmarkStyle}>Hush Sweety</Link>
             <p className="mt-3 text-sm leading-6 text-[#7b5a6e]">Discreet shipping, premium sets, and easy returns worldwide.</p>
