@@ -1520,7 +1520,7 @@ function App() {
       setTimeout(() => {
         const element = document.getElementById(location.hash.substring(1))
         if (element) element.scrollIntoView({ behavior: 'smooth' })
-      }, 10)
+      }, 150)
     } else {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
     }
@@ -1863,7 +1863,7 @@ function App() {
             </button>
           </div>
           <div className="flex min-w-0 flex-1 justify-center px-1">
-            <Link to="/" className="max-w-[46vw] truncate text-center text-base text-white sm:max-w-none sm:text-xl sm:whitespace-nowrap md:text-2xl" style={{ ...brandWordmarkStyle, letterSpacing: '0.08em' }}>Hush Sweety</Link>
+            <Link to="/" className="text-center text-[clamp(0.7rem,3.8vw,1.5rem)] text-white whitespace-nowrap md:text-2xl" style={{ ...brandWordmarkStyle, letterSpacing: '0.06em' }}>Hush Sweety</Link>
           </div>
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-white sm:gap-4 md:gap-5">
             <Link to="/bag" className="relative flex shrink-0 items-center p-1 hover:opacity-70" aria-label="Shopping bag">
@@ -1914,8 +1914,23 @@ function App() {
 
           <div className="flex-1 px-6 py-10 flex flex-col bg-white">
             <div className="flex flex-col gap-8 text-[14px] tracking-wider font-normal uppercase text-[#111]">
+              <button
+                className="flex items-center justify-between w-full text-left"
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  if (location.pathname === '/') {
+                    setTimeout(() => {
+                      document.getElementById('shop-categories')?.scrollIntoView({ behavior: 'smooth' })
+                    }, 50)
+                  } else {
+                    navigate('/#shop-categories')
+                  }
+                }}
+              >
+                SHOP
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
               {[
-                { label: 'SHOP', to: '/#hero' },
                 { label: 'NEW ARRIVAL', to: '/full-body-set' },
                 { label: 'ABOUT US', to: '/about-us' },
                 { label: 'CONTACT', to: '/contact-us' },
@@ -1987,7 +2002,7 @@ function App() {
                     </div>
                   ) : null}
                 </article>
-                <article className="rounded-2xl bg-[#f1e6ed] p-3 sm:rounded-3xl sm:p-5 lg:col-span-2">
+                <article id="shop-categories" className="rounded-2xl bg-[#f1e6ed] p-3 sm:rounded-3xl sm:p-5 lg:col-span-2">
                   <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:gap-x-5 sm:gap-y-6 md:grid-cols-3 lg:grid-cols-2">
                     {heroCategoryCards.map((item) => (
                       <Link
