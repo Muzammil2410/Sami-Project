@@ -2072,6 +2072,15 @@ function App() {
                 <ProductGrid items={featuredProducts} sourcePath="/lingerie-sets" />
               </section>
 
+              <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+                <article className="rounded-2xl bg-[#7d2f56] p-5 text-center text-white sm:rounded-3xl sm:p-8 md:p-12 lg:p-16">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-[#f8d8ea] sm:text-xs sm:tracking-[0.2em]">Online Exclusive</p>
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">Limited-Time Picks from Our Bestseller Edit</h3>
+                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#f3d6e6] sm:text-base sm:leading-8">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
+                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#7d2f56] transition hover:bg-[#fff0f7] hover:scale-105 transform">Shop Bestsellers</Link>
+                </article>
+              </section>
+
               <section id="reviews" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
                 <div className="mb-5 flex flex-col gap-2 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                   <div className="min-w-0">
@@ -2138,15 +2147,6 @@ function App() {
                     </article>
                   ))}
                 </div>
-              </section>
-
-              <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-                <article className="rounded-2xl bg-[#7d2f56] p-5 text-center text-white sm:rounded-3xl sm:p-8 md:p-12 lg:p-16">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-[#f8d8ea] sm:text-xs sm:tracking-[0.2em]">Online Exclusive</p>
-                  <h3 className="mt-3 text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">Limited-Time Picks from Our Bestseller Edit</h3>
-                  <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#f3d6e6] sm:text-base sm:leading-8">Explore statement silhouettes, signature lace details, and must-have pieces selected from our most-loved collection.</p>
-                  <Link to="/lingerie-sets" className="mt-7 inline-block rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#7d2f56] transition hover:bg-[#fff0f7] hover:scale-105 transform">Shop Bestsellers</Link>
-                </article>
               </section>
             </>
           }
