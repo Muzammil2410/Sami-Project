@@ -128,6 +128,10 @@ function App() {
     address: '',
     city: '',
     notes: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvc: '',
+    cardName: '',
   })
 
   const products = useMemo(() => {
@@ -413,6 +417,19 @@ function App() {
                 : []),
             ],
           })
+        }
+
+        if (product.id === 2) {
+          const hi1 = findNewImageByNames('hi(1)', 'hi (1)')
+          const hi2 = findNewImageByNames('hi(2)', 'hi (2)')
+          const hi3 = findNewImageByNames('hi(3)', 'hi (3)')
+          const hiImages = [hi1, hi2, hi3].filter(Boolean).map(img => img.src)
+          if (hiImages.length > 0) {
+            return applyProductOverride({
+              ...product,
+              gallery: [...product.gallery, ...hiImages],
+            })
+          }
         }
 
         return applyProductOverride(product)
@@ -1509,8 +1526,25 @@ function App() {
     setNotice('')
   }
 
+  const formatCardNumber = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 16)
+    return digits.replace(/(.{4})/g, '$1 ').trim()
+  }
+
+  const formatExpiry = (value) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4)
+    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
+    return digits
+  }
+
   const submitCustomerDetails = (event) => {
     event.preventDefault()
+    const rawCard = customerData.cardNumber.replace(/\s/g, '')
+    if (rawCard.length < 16) { setNotice('Please enter a valid 16-digit card number.'); return }
+    const [month, year] = customerData.cardExpiry.split('/')
+    if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) { setNotice('Please enter a valid expiry date (MM/YY).'); return }
+    if (customerData.cardCvc.length < 3) { setNotice('Please enter a valid CVV.'); return }
+    if (!customerData.cardName.trim()) { setNotice('Please enter the name on card.'); return }
     navigate('/thank-you')
     setNotice(`Order confirmed for ${checkoutProduct ? checkoutProduct.name : 'selected item'}.`)
   }
@@ -1519,7 +1553,11 @@ function App() {
     if (location.hash) {
       setTimeout(() => {
         const element = document.getElementById(location.hash.substring(1))
-        if (element) element.scrollIntoView({ behavior: 'smooth' })
+        if (element) {
+          const navHeight = document.querySelector('header')?.offsetHeight ?? 60
+          const top = element.getBoundingClientRect().top + window.scrollY - navHeight - 8
+          window.scrollTo({ top, behavior: 'smooth' })
+        }
       }, 150)
     } else {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
@@ -1920,8 +1958,13 @@ function App() {
                   setIsMobileMenuOpen(false)
                   if (location.pathname === '/') {
                     setTimeout(() => {
-                      document.getElementById('shop-categories')?.scrollIntoView({ behavior: 'smooth' })
-                    }, 50)
+                      const el = document.getElementById('shop-categories')
+                      if (el) {
+                        const navHeight = document.querySelector('header')?.offsetHeight ?? 60
+                        const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 8
+                        window.scrollTo({ top, behavior: 'smooth' })
+                      }
+                    }, 80)
                   } else {
                     navigate('/#shop-categories')
                   }
@@ -1951,7 +1994,7 @@ function App() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                   INSTAGRAM
                 </a>
-                <a href="https://www.tiktok.com/@hushsweeety" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
+                <a href="https://www.tiktok.com/@dance_mode_on" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[13px] font-normal uppercase text-[#111] hover:opacity-70 transition-opacity">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path></svg>
                   TIK TOK
                 </a>
@@ -2174,14 +2217,14 @@ function App() {
         <Route
           path="/checkout"
           element={
-            <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-              <h2 className="text-2xl font-semibold text-[#3f1f34] sm:text-3xl">Customer Details</h2>
-              <p className="mt-2 text-sm text-[#6e5362]">
+            <section className="mx-auto max-w-3xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
+              <h2 className="text-xl font-semibold text-[#3f1f34] sm:text-3xl">Customer Details</h2>
+              <p className="mt-2 text-xs text-[#6e5362] sm:text-sm">
                 Complete details for {checkoutProduct ? checkoutProduct.name : 'your selected products'}
                 {checkoutProduct?.selectedColor ? ` (${checkoutProduct.selectedColor})` : ''}
                 {checkoutProduct?.selectedSize ? ` - Size: ${checkoutProduct.selectedSize}` : ''}.
               </p>
-              <form onSubmit={submitCustomerDetails} className="mt-6 space-y-4 rounded-2xl bg-white p-4 ring-1 ring-[#ead9e4] sm:rounded-3xl sm:p-6">
+              <form onSubmit={submitCustomerDetails} className="mt-4 space-y-3 rounded-2xl bg-white p-4 ring-1 ring-[#ead9e4] sm:mt-6 sm:space-y-4 sm:rounded-3xl sm:p-6">
                 {[
                   { key: 'fullName', label: 'Full Name', type: 'text' },
                   { key: 'email', label: 'Email', type: 'email' },
@@ -2190,26 +2233,91 @@ function App() {
                   { key: 'city', label: 'City', type: 'text' },
                 ].map((field) => (
                   <label key={field.key} className="block">
-                    <span className="mb-1 block text-sm font-medium text-[#5d3a4e]">{field.label}</span>
+                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">{field.label}</span>
                     <input
                       required
                       type={field.type}
                       value={customerData[field.key]}
                       onChange={(event) => setCustomerData((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2 outline-none focus:border-[#b9638c]"
+                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
                     />
                   </label>
                 ))}
                 <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-[#5d3a4e]">Order Notes</span>
+                  <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Order Notes</span>
                   <textarea
                     rows="3"
                     value={customerData.notes}
                     onChange={(event) => setCustomerData((prev) => ({ ...prev, notes: event.target.value }))}
-                    className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2 outline-none focus:border-[#b9638c]"
+                    className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
                   />
                 </label>
-                <button type="submit" className="w-full rounded-full bg-[#7d2f56] px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto sm:py-2.5">
+
+                {/* Card Details */}
+                <div className="rounded-xl border border-[#ddc9d5] p-3 space-y-3 bg-[#fdf7fa] sm:p-4 sm:space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] flex items-center gap-2 sm:text-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    Card Details
+                  </p>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Card Number</span>
+                    <input
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={19}
+                      value={customerData.cardNumber}
+                      onChange={(e) => setCustomerData((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
+                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm tracking-widest outline-none focus:border-[#b9638c]"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Name on Card</span>
+                    <input
+                      required
+                      type="text"
+                      placeholder="As it appears on card"
+                      value={customerData.cardName}
+                      onChange={(e) => setCustomerData((prev) => ({ ...prev, cardName: e.target.value }))}
+                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                    />
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Expiry Date</span>
+                      <input
+                        required
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="MM/YY"
+                        maxLength={5}
+                        value={customerData.cardExpiry}
+                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardExpiry: formatExpiry(e.target.value) }))}
+                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">CVV</span>
+                      <input
+                        required
+                        type="password"
+                        inputMode="numeric"
+                        placeholder="•••"
+                        maxLength={4}
+                        value={customerData.cardCvc}
+                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {notice && (
+                  <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-600 ring-1 ring-red-200 sm:text-sm">{notice}</p>
+                )}
+
+                <button type="submit" className="w-full rounded-full bg-[#7d2f56] px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] active:bg-[#4e1b36]">
                   Confirm Buy Now
                 </button>
               </form>
@@ -2280,7 +2388,7 @@ function App() {
                   <li>A full refund within 30 days of receiving the item</li>
                   <li>A repair or replacement after this period, where appropriate</li>
                 </ul>
-                <p>If you receive a faulty or incorrect item, please contact us as soon as possible at <a href="mailto:hushsweety@secretcoco.com" className="text-[#7d2f56] hover:underline">hushsweety@secretcoco.com</a> with details and, where possible, photos.</p>
+                <p>If you receive a faulty or incorrect item, please contact us as soon as possible at <a href="mailto:support@hushsweety.com" className="text-[#7d2f56] hover:underline">support@hushsweety.com</a> with details and, where possible, photos.</p>
                 <p>We will cover reasonable return shipping costs for faulty or incorrect items.</p>
 
                 <h3 className="text-xl font-semibold text-[#3f1f34] mt-8">6. Exchanges</h3>
@@ -2437,7 +2545,7 @@ function App() {
                   <div className="pt-4 border-t border-[#ebdde5]">
                     <h3 className="text-lg font-semibold text-[#3f1f34]">Faulty or Incorrect Items</h3>
                     <p>If you receive a faulty or incorrect item, please contact us as soon as possible with details and, where possible, photos:</p>
-                    <a href="mailto:hushsweety@secretcoco.com" className="text-[#7d2f56] hover:underline font-medium">hushsweety@secretcoco.com</a>
+                    <a href="mailto:support@hushsweety.com" className="text-[#7d2f56] hover:underline font-medium">support@hushsweety.com</a>
                   </div>
                 </div>
               </div>
