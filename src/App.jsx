@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import logoImg from './assets/new/logo.jpeg'
 
 const navItems = [
   { label: 'SHOP', to: '/#hero' },
@@ -133,6 +134,7 @@ function App() {
     cardCvc: '',
     cardName: '',
   })
+  const [paymentMethod, setPaymentMethod] = useState('card')
 
   const products = useMemo(() => {
     const rawProducts = Object.entries(imageModules)
@@ -239,6 +241,7 @@ function App() {
                     image: whiteSequence[0],
                     gallery: whiteSequence,
                     swatchColor: '#ffffff',
+                    soldOut: true,
                   },
                 ]
                 : []),
@@ -250,6 +253,7 @@ function App() {
                     image: redSequence[0],
                     gallery: redSequence,
                     swatchColor: '#dc2626',
+                    soldOut: true,
                   },
                 ]
                 : []),
@@ -305,6 +309,7 @@ function App() {
                     image: whiteSequence[0],
                     gallery: whiteSequence,
                     swatchColor: '#ffffff',
+                    soldOut: true,
                   },
                 ]
                 : []),
@@ -335,6 +340,7 @@ function App() {
             ...product,
             src: l2 ? l2.src : product.src,
             gallery: newGallery,
+            soldOut: true,
           })
         }
 
@@ -390,6 +396,7 @@ function App() {
                     image: blackSequence[0],
                     gallery: blackSequence,
                     swatchColor: '#000000',
+                    soldOut: true,
                   },
                 ]
                 : []),
@@ -401,6 +408,7 @@ function App() {
                     image: whiteSequence[0],
                     gallery: whiteSequence,
                     swatchColor: '#ffffff',
+                    soldOut: true,
                   },
                 ]
                 : []),
@@ -512,6 +520,7 @@ function App() {
             image: whiteGallery[0],
             gallery: whiteGallery,
             swatchColor: '#ffffff',
+            soldOut: true,
           },
           ...(pinkGallery.length > 0 ? [{
             id: 100102,
@@ -568,6 +577,7 @@ function App() {
             image: blackGallery[0],
             gallery: blackGallery,
             swatchColor: '#000000',
+            soldOut: true,
           },
           ...(redGallery.length > 0 ? [{
             id: 100402,
@@ -575,6 +585,7 @@ function App() {
             image: redGallery[0],
             gallery: redGallery,
             swatchColor: '#dc2626',
+            soldOut: true,
           }] : [])
         ]
       })
@@ -626,6 +637,7 @@ function App() {
             image: redSculpt[0],
             gallery: redSculpt,
             swatchColor: '#dc2626',
+            soldOut: true,
           }] : []),
           ...(whiteSculpt.length > 0 ? [{
             id: 100603,
@@ -633,6 +645,7 @@ function App() {
             image: whiteSculpt[0],
             gallery: whiteSculpt,
             swatchColor: '#ffffff',
+            soldOut: true,
           }] : [])
         ]
       })
@@ -695,6 +708,7 @@ function App() {
             image: lightBlueGallery1312[0],
             gallery: lightBlueGallery1312,
             swatchColor: '#add8e6',
+            soldOut: true,
           }] : []),
           ...(pinkGallery1312.length > 0 ? [{
             id: 131202,
@@ -702,6 +716,7 @@ function App() {
             image: pinkGallery1312[0],
             gallery: pinkGallery1312,
             swatchColor: '#ffb6c1',
+            soldOut: true,
           }] : []),
           ...(redGallery1312.length > 0 ? [{
             id: 131203,
@@ -716,6 +731,7 @@ function App() {
             image: greenGallery1312[0],
             gallery: greenGallery1312,
             swatchColor: '#000000',
+            soldOut: true,
           }] : [])
         ]
       })
@@ -752,6 +768,7 @@ function App() {
             image: redGallery1313[0],
             gallery: redGallery1313,
             swatchColor: '#dc2626',
+            soldOut: true,
           }] : []),
           ...(blackGallery1313.length > 0 ? [{
             id: 131302,
@@ -810,6 +827,7 @@ function App() {
         name: 'Midnight Desire',
         price: '£24.99',
         description: '',
+        soldOut: true,
       })
     }
 
@@ -1186,8 +1204,8 @@ function App() {
       name: 'Love Affair Dress',
       price: '£34.99',
       colorOptions: [
-        ...(laRed.length > 0 ? [{ id: 13101, label: 'Red', image: laRed[0], gallery: laRed, swatchColor: '#dc2626' }] : []),
-        ...(laWhite.length > 0 ? [{ id: 13102, label: 'White', image: laWhite[0], gallery: laWhite, swatchColor: '#ffffff' }] : []),
+        ...(laRed.length > 0 ? [{ id: 13101, label: 'Red', image: laRed[0], gallery: laRed, swatchColor: '#dc2626', soldOut: true }] : []),
+        ...(laWhite.length > 0 ? [{ id: 13102, label: 'White', image: laWhite[0], gallery: laWhite, swatchColor: '#ffffff', soldOut: true }] : []),
         ...(laBlack.length > 0 ? [{ id: 13103, label: 'Black', image: laBlack[0], gallery: laBlack, swatchColor: '#000000' }] : []),
       ],
       description: '',
@@ -1222,6 +1240,7 @@ function App() {
             image: item.src,
             gallery: item.gallery,
             swatchColor: midnightBloomSwatchColors[index] ?? '#d8bfd0',
+            ...(index === 1 ? { soldOut: true } : {}),
           })),
           description: '',
         }
@@ -1244,6 +1263,7 @@ function App() {
             image: item.src,
             gallery: item.gallery,
             swatchColor: bowLuxeSwatchColors[index] ?? '#d8bfd0',
+            ...(index === 1 ? { soldOut: true } : {}),
           })),
           description: '',
         }
@@ -1539,12 +1559,14 @@ function App() {
 
   const submitCustomerDetails = (event) => {
     event.preventDefault()
-    const rawCard = customerData.cardNumber.replace(/\s/g, '')
-    if (rawCard.length < 16) { setNotice('Please enter a valid 16-digit card number.'); return }
-    const [month, year] = customerData.cardExpiry.split('/')
-    if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) { setNotice('Please enter a valid expiry date (MM/YY).'); return }
-    if (customerData.cardCvc.length < 3) { setNotice('Please enter a valid CVV.'); return }
-    if (!customerData.cardName.trim()) { setNotice('Please enter the name on card.'); return }
+    if (paymentMethod === 'card') {
+      const rawCard = customerData.cardNumber.replace(/\s/g, '')
+      if (rawCard.length < 16) { setNotice('Please enter a valid 16-digit card number.'); return }
+      const [month, year] = customerData.cardExpiry.split('/')
+      if (!month || !year || parseInt(month) < 1 || parseInt(month) > 12) { setNotice('Please enter a valid expiry date (MM/YY).'); return }
+      if (customerData.cardCvc.length < 3) { setNotice('Please enter a valid CVV.'); return }
+      if (!customerData.cardName.trim()) { setNotice('Please enter the name on card.'); return }
+    }
     navigate('/thank-you')
     setNotice(`Order confirmed for ${checkoutProduct ? checkoutProduct.name : 'selected item'}.`)
   }
@@ -1777,7 +1799,7 @@ function App() {
                         setSelectedPreview(0)
                       }}
                       aria-label={option.label}
-                      className={`h-8 w-8 rounded-full border-2 ${selectedColorIndex === index ? 'border-[#7d2f56]' : 'border-[#d8bfd0]'}`}
+                      className={`relative h-8 w-8 rounded-full border-2 ${selectedColorIndex === index ? 'border-[#7d2f56]' : 'border-[#d8bfd0]'}`}
                     >
                       <span
                         className="block h-full w-full rounded-full"
@@ -1832,38 +1854,50 @@ function App() {
               </div>
             ) : null}
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
-              <button
-                type="button"
-                onClick={() =>
-                  addToBag({
-                    ...product,
-                    name: activeProductName,
-                    price: activeProductPrice,
-                    src: productGallery[0],
-                    selectedColor: colorOptions[selectedColorIndex]?.label,
-                    selectedSize: selectedSize
-                  })
-                }
-                className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
-              >
-                Add to Bag
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  openCheckout({
-                    ...product,
-                    name: activeProductName,
-                    price: activeProductPrice,
-                    src: productGallery[0],
-                    selectedColor: colorOptions[selectedColorIndex]?.label,
-                    selectedSize: selectedSize
-                  })
-                }
-                className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
-              >
-                Buy Now
-              </button>
+              {(colorOptions[selectedColorIndex]?.soldOut || product?.soldOut) ? (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full rounded-full border border-[#d8bfd0] bg-gray-100 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-gray-400 cursor-not-allowed sm:w-auto"
+                >
+                  Sold Out
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addToBag({
+                        ...product,
+                        name: activeProductName,
+                        price: activeProductPrice,
+                        src: productGallery[0],
+                        selectedColor: colorOptions[selectedColorIndex]?.label,
+                        selectedSize: selectedSize
+                      })
+                    }
+                    className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
+                  >
+                    Add to Bag
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openCheckout({
+                        ...product,
+                        name: activeProductName,
+                        price: activeProductPrice,
+                        src: productGallery[0],
+                        selectedColor: colorOptions[selectedColorIndex]?.label,
+                        selectedSize: selectedSize
+                      })
+                    }
+                    className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
+                  >
+                    Buy Now
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </article>
@@ -1904,6 +1938,7 @@ function App() {
             <Link to="/" className="text-center text-[clamp(0.7rem,3.8vw,1.5rem)] text-white whitespace-nowrap md:text-2xl" style={{ ...brandWordmarkStyle, letterSpacing: '0.06em' }}>Hush Sweety</Link>
           </div>
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2 text-white sm:gap-4 md:gap-5">
+            <img src={logoImg} alt="Hush Sweety Logo" className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-12 sm:w-12" />
             <Link to="/bag" className="relative flex shrink-0 items-center p-1 hover:opacity-70" aria-label="Shopping bag">
               <svg className="h-6 w-6 sm:h-[26px] sm:w-[26px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="2.5 6 21.5 6 19 16 5 16 2.5 6"></polyline>
@@ -2253,65 +2288,101 @@ function App() {
                   />
                 </label>
 
+                {/* Payment Method */}
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] sm:text-sm">Payment Method</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('card')}
+                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${paymentMethod === 'card' ? 'border-[#7d2f56] bg-[#fff0f7] text-[#7d2f56]' : 'border-[#ddc9d5] text-[#5d3a4e]'}`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                      Card
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('applepay')}
+                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${paymentMethod === 'applepay' ? 'border-[#7d2f56] bg-[#fff0f7] text-[#7d2f56]' : 'border-[#ddc9d5] text-[#5d3a4e]'}`}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                      Apple Pay
+                    </button>
+                  </div>
+                </div>
+
                 {/* Card Details */}
-                <div className="rounded-xl border border-[#ddc9d5] p-3 space-y-3 bg-[#fdf7fa] sm:p-4 sm:space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] flex items-center gap-2 sm:text-sm">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                    Card Details
-                  </p>
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Card Number</span>
-                    <input
-                      required
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="1234 5678 9012 3456"
-                      maxLength={19}
-                      value={customerData.cardNumber}
-                      onChange={(e) => setCustomerData((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
-                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm tracking-widest outline-none focus:border-[#b9638c]"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Name on Card</span>
-                    <input
-                      required
-                      type="text"
-                      placeholder="As it appears on card"
-                      value={customerData.cardName}
-                      onChange={(e) => setCustomerData((prev) => ({ ...prev, cardName: e.target.value }))}
-                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                    />
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                {paymentMethod === 'card' && (
+                  <div className="rounded-xl border border-[#ddc9d5] p-3 space-y-3 bg-[#fdf7fa] sm:p-4 sm:space-y-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] flex items-center gap-2 sm:text-sm">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                      Card Details
+                    </p>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Expiry Date</span>
+                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Card Number</span>
                       <input
                         required
                         type="text"
                         inputMode="numeric"
-                        placeholder="MM/YY"
-                        maxLength={5}
-                        value={customerData.cardExpiry}
-                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardExpiry: formatExpiry(e.target.value) }))}
-                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                        placeholder="1234 5678 9012 3456"
+                        maxLength={19}
+                        value={customerData.cardNumber}
+                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
+                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm tracking-widest outline-none focus:border-[#b9638c]"
                       />
                     </label>
                     <label className="block">
-                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">CVV</span>
+                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Name on Card</span>
                       <input
                         required
-                        type="password"
-                        inputMode="numeric"
-                        placeholder="•••"
-                        maxLength={4}
-                        value={customerData.cardCvc}
-                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                        type="text"
+                        placeholder="As it appears on card"
+                        value={customerData.cardName}
+                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardName: e.target.value }))}
                         className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
                       />
                     </label>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Expiry Date</span>
+                        <input
+                          required
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          value={customerData.cardExpiry}
+                          onChange={(e) => setCustomerData((prev) => ({ ...prev, cardExpiry: formatExpiry(e.target.value) }))}
+                          className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">CVV</span>
+                        <input
+                          required
+                          type="password"
+                          inputMode="numeric"
+                          placeholder="•••"
+                          maxLength={4}
+                          value={customerData.cardCvc}
+                          onChange={(e) => setCustomerData((prev) => ({ ...prev, cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                          className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
+                        />
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Apple Pay */}
+                {paymentMethod === 'applepay' && (
+                  <div className="rounded-xl border border-[#ddc9d5] p-4 bg-[#fdf7fa] flex flex-col items-center gap-3 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    </div>
+                    <p className="text-sm font-semibold text-[#3f1f34]">Apple Pay</p>
+                    <p className="text-xs text-[#6e5362]">You will be redirected to Apple Pay to complete your purchase securely.</p>
+                  </div>
+                )}
 
                 {notice && (
                   <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-600 ring-1 ring-red-200 sm:text-sm">{notice}</p>
