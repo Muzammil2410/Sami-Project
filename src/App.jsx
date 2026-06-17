@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import logoImg from './assets/new/logo.jpeg'
+import { getShopifyProducts, createShopifyCheckout } from './services/shopify'
 
 const navItems = [
   { label: 'SHOP', to: '/#hero' },
@@ -99,6 +100,147 @@ const brandWordmarkStyle = {
   textTransform: 'uppercase',
 }
 
+const ShopifyCheckoutRedirect = ({ bagItems, productsForLookup }) => {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    const initiateCheckout = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        let lineItems = []
+
+        // Check if checking out a single product (Buy Now)
+        const checkoutProductId = searchParams.get('product')
+        const checkoutColor = searchParams.get('color')
+        const checkoutSize = searchParams.get('size')
+        
+        if (checkoutProductId) {
+          // Find product by id (handle or shopifyId or id)
+          const product = productsForLookup.find(
+            (p) => String(p.id) === String(checkoutProductId) || String(p.shopifyId) === String(checkoutProductId)
+          )
+          if (!product) {
+            throw new Error('Product not found.')
+          }
+          
+          // Find the matching Shopify variant ID based on selected size/color
+          let variantId = product.variants?.[0]?.id
+          if (product.variants && product.variants.length > 0) {
+            const matchedVariant = product.variants.find((v) => {
+              const matchesColor = !checkoutColor || v.selectedOptions.color?.toLowerCase() === checkoutColor.toLowerCase()
+              const matchesSize = !checkoutSize || v.selectedOptions.size?.toLowerCase() === checkoutSize.toLowerCase()
+              return matchesColor && matchesSize
+            })
+            if (matchedVariant) {
+              variantId = matchedVariant.id
+            }
+          }
+          
+          if (!variantId) {
+            // If it's a static demo product without Shopify variants, we can show a clear message
+            if (!product.shopifyId) {
+              throw new Error(`"${product.name}" is a demo product. To enable checkout, please ensure it is added and published on your Shopify Store.`);
+            }
+            throw new Error('Selected product variant is not available.');
+          }
+
+          lineItems = [{ variantId, quantity: 1 }]
+        } else {
+          // Checkout all items in the bag
+          if (bagItems.length === 0) {
+            throw new Error('Your bag is empty.')
+          }
+          
+          lineItems = bagItems.map((item) => {
+            let variantId = item.shopifyVariantId || item.variants?.[0]?.id
+            if (item.variants && item.variants.length > 1) {
+              const matchedVariant = item.variants.find((v) => {
+                const matchesColor = !item.selectedColor || v.selectedOptions.color?.toLowerCase() === item.selectedColor.toLowerCase()
+                const matchesSize = !item.selectedSize || v.selectedOptions.size?.toLowerCase() === item.selectedSize.toLowerCase()
+                return matchesColor && matchesSize
+              })
+              if (matchedVariant) {
+                variantId = matchedVariant.id
+              }
+            }
+            return {
+              variantId,
+              quantity: item.quantity || 1
+            }
+          }).filter((item) => item.variantId)
+          
+          if (lineItems.length === 0) {
+            // Find if any item in the bag is a demo product
+            const hasDemoProduct = bagItems.some(item => !item.shopifyId && !item.shopifyVariantId);
+            if (hasDemoProduct) {
+              throw new Error('Your bag contains demo products. To enable checkout, please ensure all products are added and published on your Shopify Store.');
+            }
+            throw new Error('No valid product variants found in your bag.');
+          }
+        }
+
+        console.log('Creating Shopify checkout with line items:', lineItems)
+        const checkout = await createShopifyCheckout(lineItems)
+        
+        if (active) {
+          // Redirect to Shopify hosted checkout URL
+          window.location.href = checkout.webUrl
+        }
+      } catch (err) {
+        console.error('Checkout error:', err)
+        if (active) {
+          setError(err.message || 'An error occurred while creating checkout.')
+          setLoading(false)
+        }
+      }
+    }
+
+    initiateCheckout()
+    return () => {
+      active = false
+    }
+  }, [bagItems, productsForLookup, searchParams])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 px-4 min-h-[60vh] text-center bg-[#fff0f7]">
+        {/* Loading Spinner */}
+        <div className="w-16 h-16 border-4 border-[#7d2f56]/30 border-t-[#7d2f56] rounded-full animate-spin"></div>
+        <h2 className="mt-8 text-2xl font-semibold text-[#3f1f34]">Preparing Your Secure Checkout</h2>
+        <p className="mt-2 text-gray-500 max-w-md">We are redirecting you to Shopify to complete your purchase safely. Please do not close this window.</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 min-h-[60vh] text-center bg-[#fff0f7]">
+        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6">
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-semibold text-[#3f1f34]">Checkout Failed</h2>
+        <p className="mt-2 text-red-600 max-w-md bg-red-50 p-4 rounded-xl ring-1 ring-red-200">{error}</p>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="mt-8 rounded-full bg-[#7d2f56] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] transition-transform hover:scale-105"
+        >
+          Go Back
+        </button>
+      </div>
+    )
+  }
+
+  return null
+}
+
 function App() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -135,6 +277,37 @@ function App() {
     cardName: '',
   })
   const [paymentMethod, setPaymentMethod] = useState('card')
+
+  const [shopifyProducts, setShopifyProducts] = useState([])
+  const [isProductsLoading, setIsProductsLoading] = useState(true)
+  const [productsError, setProductsError] = useState(null)
+
+  useEffect(() => {
+    let isMounted = true
+    const loadShopifyData = async () => {
+      try {
+        setIsProductsLoading(true)
+        const items = await getShopifyProducts()
+        if (isMounted) {
+          setShopifyProducts(items)
+          setProductsError(null)
+        }
+      } catch (err) {
+        console.error('Failed to fetch Shopify products on load:', err)
+        if (isMounted) {
+          setProductsError('Failed to load products from Shopify.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsProductsLoading(false)
+        }
+      }
+    }
+    loadShopifyData()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const products = useMemo(() => {
     const rawProducts = Object.entries(imageModules)
@@ -1212,7 +1385,17 @@ function App() {
     }
   }, [newImageModules])
 
-  const productsForLookup = [...products, ...extraLingerieProducts, ...extraNightwearProducts, customLoveAffairDress]
+  const staticProductsForLookup = useMemo(() => {
+    return [...products, ...extraLingerieProducts, ...extraNightwearProducts, customLoveAffairDress]
+  }, [products, extraLingerieProducts, extraNightwearProducts, customLoveAffairDress])
+
+  const productsForLookup = useMemo(() => {
+    if (shopifyProducts && shopifyProducts.length > 0) {
+      return shopifyProducts
+    }
+    return staticProductsForLookup
+  }, [shopifyProducts, staticProductsForLookup])
+
   const lingerieCircleProducts = useMemo(() => {
     const selectedByNameProducts = lingerieCircleProductNames
       .map((targetName) => productsForLookup.find((product) => product.name === targetName))
@@ -1429,29 +1612,18 @@ function App() {
     ])
     return mergedIds
   }, [lingerieCircleProductIds, bodysuitsCircleProductIds, leatherCircleProducts, fullBodySetCircleProducts])
-  const heroCategoryCards = [
-    { label: 'Bodysuits', productId: 2, sourcePath: '/bodysuits', to: '/bodysuits' },
-    { label: 'Lingerie', productId: 1007, sourcePath: '/lingerie-sets', to: '/lingerie-sets' },
-    { label: 'Leather', productId: 1206, sourcePath: '/leather', to: '/leather' },
-    { label: 'Sleepwear', productId: 36, sourcePath: '/sleepwear', to: '/sleepwear' },
-    { label: 'Wrap set', productId: 1102, sourcePath: '/wrap-set', to: '/wrap-set' },
-    { label: 'Full body set', productId: 1008, sourcePath: '/full-body-set', to: '/full-body-set' },
-  ].map((item) => ({
-    ...item,
-    image: productsForLookup.find((product) => product.id === item.productId)?.src ?? heroImage,
-  }))
-  const bodysuits = bodysuitsCircleProducts
-  const sleepwear = sleepwearCircleProducts
-  const leather = leatherCircleProducts
-  const wrapSet = wrapSetCircleProducts
-  const fullBodySet = fullBodySetCircleProducts
-  const lingerieSets = lingerieCircleProducts
-  const featuredProducts = lingerieSets.slice(0, Math.min(6, lingerieSets.length))
-  const newArrivals = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
+  const staticBodysuits = bodysuitsCircleProducts
+  const staticSleepwear = sleepwearCircleProducts
+  const staticLeather = leatherCircleProducts
+  const staticWrapSet = wrapSetCircleProducts
+  const staticFullBodySet = fullBodySetCircleProducts
+  const staticLingerieSets = lingerieCircleProducts
+  const staticFeaturedProducts = staticLingerieSets.slice(0, Math.min(6, staticLingerieSets.length))
+  const staticNewArrivals = [...extraLingerieProducts, ...products.slice(0, Math.min(16, products.length))]
     .filter((item) => ![1, 54].includes(item.id))
     .filter((item) => !heroCircleExcludedProductIds.has(item.id))
     .slice(0, Math.min(12, products.length))
-  const nightwear = useMemo(() => {
+  const staticNightwear = useMemo(() => {
     const baseNightwear = [...extraNightwearProducts, ...products.filter((_, index) => index % 2 === 0)]
       .filter((item) => item.id !== 57)
       .filter((item) => !heroCircleExcludedProductIds.has(item.id))
@@ -1471,14 +1643,113 @@ function App() {
 
     return reorderedNightwear
   }, [extraNightwearProducts, products, heroCircleExcludedProductIds])
-  const accessories = products
+  const staticAccessories = products
     .filter((_, index) => index % 3 === 0)
     .filter((item) => item.id !== 57)
     .filter((item) => !heroCircleExcludedProductIds.has(item.id))
-  const checkoutProductId = Number(searchParams.get('product'))
+
+  const categorized = useMemo(() => {
+    if (shopifyProducts && shopifyProducts.length > 0) {
+      const cats = {
+        lingerieSets: [],
+        bodysuits: [],
+        sleepwear: [],
+        leather: [],
+        wrapSet: [],
+        fullBodySet: [],
+        nightwear: [],
+        accessories: [],
+        newArrivals: shopifyProducts,
+        featuredProducts: shopifyProducts.slice(0, 8),
+      }
+
+      shopifyProducts.forEach(product => {
+        const title = product.name.toLowerCase()
+        if (title.includes('bodysuit') || title.includes('whisper')) {
+          cats.bodysuits.push(product)
+        } else if (title.includes('set') && (title.includes('lingerie') || title.includes('lace') || title.includes('luxe'))) {
+          cats.lingerieSets.push(product)
+        } else if (title.includes('sleep') || title.includes('crush') || title.includes('slip') || title.includes('night')) {
+          cats.sleepwear.push(product)
+        } else if (title.includes('leather')) {
+          cats.leather.push(product)
+        } else if (title.includes('wrap')) {
+          cats.wrapSet.push(product)
+        } else if (title.includes('full body') || title.includes('story')) {
+          cats.fullBodySet.push(product)
+        } else if (title.includes('accessory') || title.includes('accessories')) {
+          cats.accessories.push(product)
+        } else {
+          cats.lingerieSets.push(product)
+        }
+      })
+
+      // If any category is empty but we have products, let's distribute the first few items
+      if (cats.bodysuits.length === 0 && shopifyProducts.length > 0) cats.bodysuits = shopifyProducts
+      if (cats.lingerieSets.length === 0 && shopifyProducts.length > 0) cats.lingerieSets = shopifyProducts
+      if (cats.sleepwear.length === 0 && shopifyProducts.length > 0) cats.sleepwear = shopifyProducts
+      if (cats.leather.length === 0 && shopifyProducts.length > 0) cats.leather = shopifyProducts
+      if (cats.wrapSet.length === 0 && shopifyProducts.length > 0) cats.wrapSet = shopifyProducts
+      if (cats.fullBodySet.length === 0 && shopifyProducts.length > 0) cats.fullBodySet = shopifyProducts
+      if (cats.nightwear.length === 0 && shopifyProducts.length > 0) cats.nightwear = shopifyProducts
+      if (cats.accessories.length === 0 && shopifyProducts.length > 0) cats.accessories = shopifyProducts
+
+      return cats
+    }
+
+    return {
+      lingerieSets: staticLingerieSets,
+      bodysuits: staticBodysuits,
+      sleepwear: staticSleepwear,
+      leather: staticLeather,
+      wrapSet: staticWrapSet,
+      fullBodySet: staticFullBodySet,
+      nightwear: staticNightwear,
+      accessories: staticAccessories,
+      newArrivals: staticNewArrivals,
+      featuredProducts: staticFeaturedProducts,
+    }
+  }, [
+    shopifyProducts,
+    staticLingerieSets,
+    staticBodysuits,
+    staticSleepwear,
+    staticLeather,
+    staticWrapSet,
+    staticFullBodySet,
+    staticNightwear,
+    staticAccessories,
+    staticNewArrivals,
+    staticFeaturedProducts
+  ])
+
+  const bodysuits = categorized.bodysuits
+  const sleepwear = categorized.sleepwear
+  const leather = categorized.leather
+  const wrapSet = categorized.wrapSet
+  const fullBodySet = categorized.fullBodySet
+  const lingerieSets = categorized.lingerieSets
+  const featuredProducts = categorized.featuredProducts
+  const newArrivals = categorized.newArrivals
+  const nightwear = categorized.nightwear
+  const accessories = categorized.accessories
+
+  const heroCategoryCards = [
+    { label: 'Bodysuits', productId: shopifyProducts.length > 0 ? (bodysuits[0]?.id || '') : 2, sourcePath: '/bodysuits', to: '/bodysuits' },
+    { label: 'Lingerie', productId: shopifyProducts.length > 0 ? (lingerieSets[0]?.id || '') : 1007, sourcePath: '/lingerie-sets', to: '/lingerie-sets' },
+    { label: 'Leather', productId: shopifyProducts.length > 0 ? (leather[0]?.id || '') : 1206, sourcePath: '/leather', to: '/leather' },
+    { label: 'Sleepwear', productId: shopifyProducts.length > 0 ? (sleepwear[0]?.id || '') : 36, sourcePath: '/sleepwear', to: '/sleepwear' },
+    { label: 'Wrap set', productId: shopifyProducts.length > 0 ? (wrapSet[0]?.id || '') : 1102, sourcePath: '/wrap-set', to: '/wrap-set' },
+    { label: 'Full body set', productId: shopifyProducts.length > 0 ? (fullBodySet[0]?.id || '') : 1008, sourcePath: '/full-body-set', to: '/full-body-set' },
+  ].map((item) => ({
+    ...item,
+    image: productsForLookup.find((product) => String(product.id) === String(item.productId))?.src ?? heroImage,
+  }))
+
+  const checkoutProductId = searchParams.get('product')
   const checkoutColor = searchParams.get('color')
   const checkoutSize = searchParams.get('size')
-  const rawCheckoutProduct = productsForLookup.find((item) => item.id === checkoutProductId) ?? bagItems[0] ?? null
+  const rawCheckoutProduct = productsForLookup.find((item) => String(item.id) === String(checkoutProductId) || String(item.shopifyId) === String(checkoutProductId)) ?? bagItems[0] ?? null
   const checkoutProduct = useMemo(() => {
     if (!rawCheckoutProduct) return null
     return {
@@ -1681,15 +1952,17 @@ function App() {
 
   const ProductDetailsPage = () => {
     const { id } = useParams()
-    const product = [...productsForLookup, ...lingerieCircleProducts, ...sleepwearCircleProducts].find((item) => item.id === Number(id))
+    const product = productsForLookup.find(
+      (item) => String(item.id) === String(id) || String(item.shopifyId) === String(id)
+    )
     const [selectedPreview, setSelectedPreview] = useState(0)
     const [selectedColorIndex, setSelectedColorIndex] = useState(0)
     const [selectedSize, setSelectedSize] = useState('S')
     const showSetOfferNotice = product ? [1008, 1009, 1021].includes(product.id) : false
     const previousCollectionPath = location.state?.from
-    const isAccessoryProduct = product ? accessories.some((item) => item.id === product.id) : false
-    const isNightwearProduct = product ? nightwear.some((item) => item.id === product.id) : false
-    const isNewArrivalProduct = product ? newArrivals.some((item) => item.id === product.id) : false
+    const isAccessoryProduct = product ? accessories.some((item) => String(item.id) === String(product.id)) : false
+    const isNightwearProduct = product ? nightwear.some((item) => String(item.id) === String(product.id)) : false
+    const isNewArrivalProduct = product ? newArrivals.some((item) => String(item.id) === String(product.id)) : false
     const backPath = previousCollectionPath ?? (isAccessoryProduct ? '/accessories' : isNightwearProduct ? '/nightwear' : isNewArrivalProduct ? '/new-arrivals' : '/lingerie-sets')
     const backLabelMap = {
       '/accessories': 'Back to Accessories',
@@ -1706,7 +1979,37 @@ function App() {
       product?.id === 40 && extraGalleryImageForSet40
         ? [...product.gallery, extraGalleryImageForSet40]
         : product?.gallery ?? []
-    const colorOptions = Array.isArray(product?.colorOptions) ? product.colorOptions : []
+
+    const colorOptions = useMemo(() => {
+      if (product?.colorOptions) return product.colorOptions;
+      if (product?.colors && product.colors.length > 0) {
+        return product.colors.map((color, index) => {
+          const variant = product.variants.find(v => v.selectedOptions.color?.toLowerCase() === color.toLowerCase())
+          return {
+            id: `color-${index}`,
+            label: color,
+            image: variant?.image || product.src,
+            gallery: product.gallery.filter(Boolean),
+            swatchColor: color.toLowerCase() === 'black' ? '#000000' 
+                       : color.toLowerCase() === 'white' ? '#ffffff'
+                       : color.toLowerCase() === 'red' ? '#dc2626'
+                       : color.toLowerCase() === 'pink' ? '#ffb6c1'
+                       : color.toLowerCase() === 'brown' ? '#8b4513'
+                       : '#d8bfd0',
+            soldOut: variant ? !variant.available : false
+          }
+        })
+      }
+      return []
+    }, [product])
+
+    const availableSizes = useMemo(() => {
+      if (product?.sizes && product.sizes.length > 0) {
+        return product.sizes
+      }
+      return ['S', 'M', 'L', 'XL']
+    }, [product])
+
     const selectedColorGallery =
       colorOptions.length > 0 && Array.isArray(colorOptions[selectedColorIndex]?.gallery)
         ? colorOptions[selectedColorIndex].gallery
@@ -1725,11 +2028,32 @@ function App() {
         product.description.startsWith('Single product preview for'))
     const visibleProductDescription = shouldHideAutoDescription ? '' : product?.description ?? ''
 
+    const selectedColorLabel = colorOptions[selectedColorIndex]?.label
+    const matchedVariant = useMemo(() => {
+      if (!product || !product.variants) return null
+      return product.variants.find(v => {
+        const matchesColor = !selectedColorLabel || v.selectedOptions.color?.toLowerCase() === selectedColorLabel.toLowerCase()
+        const matchesSize = !selectedSize || v.selectedOptions.size?.toLowerCase() === selectedSize.toLowerCase()
+        return matchesColor && matchesSize
+      }) || product.variants[0]
+    }, [product, selectedColorLabel, selectedSize])
+
     useEffect(() => {
       setSelectedPreview(0)
       setSelectedColorIndex(0)
-      setSelectedSize('S')
-    }, [id])
+      if (product) {
+        setSelectedSize(product.sizes?.[0] || 'S')
+      }
+    }, [id, product])
+
+    if (isProductsLoading) {
+      return (
+        <section className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <div className="w-12 h-12 border-4 border-[#7d2f56]/30 border-t-[#7d2f56] rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-500">Loading product details...</p>
+        </section>
+      )
+    }
 
     if (!product) {
       return (
@@ -1740,6 +2064,24 @@ function App() {
           </Link>
         </section>
       )
+    }
+
+    const handleAddToBag = () => {
+      addToBag({
+        ...product,
+        name: activeProductName,
+        price: activeProductPrice,
+        src: productGallery[0] || product.src,
+        selectedColor: selectedColorLabel,
+        selectedSize: selectedSize,
+        shopifyVariantId: matchedVariant?.id
+      })
+    }
+
+    const handleBuyNow = () => {
+      const sizeParam = selectedSize ? `&size=${encodeURIComponent(selectedSize)}` : ''
+      const colorParam = selectedColorLabel ? `&color=${encodeURIComponent(selectedColorLabel)}` : ''
+      navigate(`/checkout?product=${product.id}${colorParam}${sizeParam}`)
     }
 
     return (
@@ -1813,7 +2155,7 @@ function App() {
             <div className="mt-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#a34977]">Choose Size</p>
               <div className="flex flex-wrap gap-2">
-                {['S', 'M', 'L', 'XL'].map((size) => (
+                {availableSizes.map((size) => (
                   <button
                     key={`size-option-${size}`}
                     type="button"
@@ -1866,32 +2208,14 @@ function App() {
                 <>
                   <button
                     type="button"
-                    onClick={() =>
-                      addToBag({
-                        ...product,
-                        name: activeProductName,
-                        price: activeProductPrice,
-                        src: productGallery[0],
-                        selectedColor: colorOptions[selectedColorIndex]?.label,
-                        selectedSize: selectedSize
-                      })
-                    }
+                    onClick={handleAddToBag}
                     className="w-full rounded-full border border-[#d8bfd0] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide hover:bg-[#fff0f7] sm:w-auto"
                   >
                     Add to Bag
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      openCheckout({
-                        ...product,
-                        name: activeProductName,
-                        price: activeProductPrice,
-                        src: productGallery[0],
-                        selectedColor: colorOptions[selectedColorIndex]?.label,
-                        selectedSize: selectedSize
-                      })
-                    }
+                    onClick={handleBuyNow}
                     className="w-full rounded-full bg-[#7d2f56] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] sm:w-auto"
                   >
                     Buy Now
@@ -2252,147 +2576,10 @@ function App() {
         <Route
           path="/checkout"
           element={
-            <section className="mx-auto max-w-3xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
-              <h2 className="text-xl font-semibold text-[#3f1f34] sm:text-3xl">Customer Details</h2>
-              <p className="mt-2 text-xs text-[#6e5362] sm:text-sm">
-                Complete details for {checkoutProduct ? checkoutProduct.name : 'your selected products'}
-                {checkoutProduct?.selectedColor ? ` (${checkoutProduct.selectedColor})` : ''}
-                {checkoutProduct?.selectedSize ? ` - Size: ${checkoutProduct.selectedSize}` : ''}.
-              </p>
-              <form onSubmit={submitCustomerDetails} className="mt-4 space-y-3 rounded-2xl bg-white p-4 ring-1 ring-[#ead9e4] sm:mt-6 sm:space-y-4 sm:rounded-3xl sm:p-6">
-                {[
-                  { key: 'fullName', label: 'Full Name', type: 'text' },
-                  { key: 'email', label: 'Email', type: 'email' },
-                  { key: 'phone', label: 'Phone Number', type: 'tel' },
-                  { key: 'address', label: 'Address', type: 'text' },
-                  { key: 'city', label: 'City', type: 'text' },
-                ].map((field) => (
-                  <label key={field.key} className="block">
-                    <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">{field.label}</span>
-                    <input
-                      required
-                      type={field.type}
-                      value={customerData[field.key]}
-                      onChange={(event) => setCustomerData((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                      className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                    />
-                  </label>
-                ))}
-                <label className="block">
-                  <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Order Notes</span>
-                  <textarea
-                    rows="3"
-                    value={customerData.notes}
-                    onChange={(event) => setCustomerData((prev) => ({ ...prev, notes: event.target.value }))}
-                    className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                  />
-                </label>
-
-                {/* Payment Method */}
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] sm:text-sm">Payment Method</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${paymentMethod === 'card' ? 'border-[#7d2f56] bg-[#fff0f7] text-[#7d2f56]' : 'border-[#ddc9d5] text-[#5d3a4e]'}`}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                      Card
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('applepay')}
-                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-2.5 text-xs font-semibold transition sm:text-sm ${paymentMethod === 'applepay' ? 'border-[#7d2f56] bg-[#fff0f7] text-[#7d2f56]' : 'border-[#ddc9d5] text-[#5d3a4e]'}`}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                      Apple Pay
-                    </button>
-                  </div>
-                </div>
-
-                {/* Card Details */}
-                {paymentMethod === 'card' && (
-                  <div className="rounded-xl border border-[#ddc9d5] p-3 space-y-3 bg-[#fdf7fa] sm:p-4 sm:space-y-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#5d3a4e] flex items-center gap-2 sm:text-sm">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                      Card Details
-                    </p>
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Card Number</span>
-                      <input
-                        required
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={19}
-                        value={customerData.cardNumber}
-                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
-                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm tracking-widest outline-none focus:border-[#b9638c]"
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Name on Card</span>
-                      <input
-                        required
-                        type="text"
-                        placeholder="As it appears on card"
-                        value={customerData.cardName}
-                        onChange={(e) => setCustomerData((prev) => ({ ...prev, cardName: e.target.value }))}
-                        className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                      />
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">Expiry Date</span>
-                        <input
-                          required
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          value={customerData.cardExpiry}
-                          onChange={(e) => setCustomerData((prev) => ({ ...prev, cardExpiry: formatExpiry(e.target.value) }))}
-                          className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-medium text-[#5d3a4e] sm:text-sm">CVV</span>
-                        <input
-                          required
-                          type="password"
-                          inputMode="numeric"
-                          placeholder="•••"
-                          maxLength={4}
-                          value={customerData.cardCvc}
-                          onChange={(e) => setCustomerData((prev) => ({ ...prev, cardCvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                          className="w-full rounded-xl border border-[#ddc9d5] px-3 py-2.5 text-sm outline-none focus:border-[#b9638c]"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
-
-                {/* Apple Pay */}
-                {paymentMethod === 'applepay' && (
-                  <div className="rounded-xl border border-[#ddc9d5] p-4 bg-[#fdf7fa] flex flex-col items-center gap-3 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-black">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    </div>
-                    <p className="text-sm font-semibold text-[#3f1f34]">Apple Pay</p>
-                    <p className="text-xs text-[#6e5362]">You will be redirected to Apple Pay to complete your purchase securely.</p>
-                  </div>
-                )}
-
-                {notice && (
-                  <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-600 ring-1 ring-red-200 sm:text-sm">{notice}</p>
-                )}
-
-                <button type="submit" className="w-full rounded-full bg-[#7d2f56] px-5 py-3 text-sm font-semibold uppercase tracking-wide text-white hover:bg-[#632242] active:bg-[#4e1b36]">
-                  Confirm Buy Now
-                </button>
-              </form>
-            </section>
+            <ShopifyCheckoutRedirect 
+              bagItems={bagItems} 
+              productsForLookup={productsForLookup} 
+            />
           }
         />
         <Route
