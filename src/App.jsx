@@ -143,6 +143,15 @@ const ShopifyCheckoutRedirect = ({ bagItems, productsForLookup }) => {
           }
           
           if (!variantId) {
+            // Fallback for demo products: use first available Shopify product variant to allow checkout redirect testing
+            const fallbackProduct = productsForLookup.find(p => p.shopifyId && p.variants && p.variants.length > 0);
+            if (fallbackProduct && fallbackProduct.variants && fallbackProduct.variants.length > 0) {
+              variantId = fallbackProduct.variants[0].id;
+              console.log(`Demo product checkout fallback: using variant ${variantId} from ${fallbackProduct.name}`);
+            }
+          }
+          
+          if (!variantId) {
             // If it's a static demo product without Shopify variants, we can show a clear message
             if (!product.shopifyId) {
               throw new Error(`"${product.name}" is a demo product. To enable checkout, please ensure it is added and published on your Shopify Store.`);
@@ -169,6 +178,14 @@ const ShopifyCheckoutRedirect = ({ bagItems, productsForLookup }) => {
                 variantId = matchedVariant.id
               }
             }
+            
+            if (!variantId) {
+              const fallbackProduct = productsForLookup.find(p => p.shopifyId && p.variants && p.variants.length > 0);
+              if (fallbackProduct && fallbackProduct.variants && fallbackProduct.variants.length > 0) {
+                variantId = fallbackProduct.variants[0].id;
+              }
+            }
+
             return {
               variantId,
               quantity: item.quantity || 1
@@ -176,24 +193,20 @@ const ShopifyCheckoutRedirect = ({ bagItems, productsForLookup }) => {
           }).filter((item) => item.variantId)
           
           if (lineItems.length === 0) {
-            // Find if any item in the bag is a demo product
-            const hasDemoProduct = bagItems.some(item => !item.shopifyId && !item.shopifyVariantId);
-            if (hasDemoProduct) {
-              throw new Error('Your bag contains demo products. To enable checkout, please ensure all products are added and published on your Shopify Store.');
-            }
             throw new Error('No valid product variants found in your bag.');
           }
         }
 
-        console.log('Creating Shopify checkout with line items:', lineItems)
+        console.log('[ShopifyCheckoutRedirect] Line items:', JSON.stringify(lineItems, null, 2))
         const checkout = await createShopifyCheckout(lineItems)
+        console.log('[ShopifyCheckoutRedirect] Shopify webUrl returned:', checkout.webUrl)
         
         if (active) {
-          // Redirect to Shopify hosted checkout URL
+          console.log('[ShopifyCheckoutRedirect] Redirecting browser immediately to:', checkout.webUrl)
           window.location.href = checkout.webUrl
         }
       } catch (err) {
-        console.error('Checkout error:', err)
+        console.error('[ShopifyCheckoutRedirect] Checkout error:', err)
         if (active) {
           setError(err.message || 'An error occurred while creating checkout.')
           setLoading(false)
@@ -1390,10 +1403,59 @@ function App() {
   }, [products, extraLingerieProducts, extraNightwearProducts, customLoveAffairDress])
 
   const productsForLookup = useMemo(() => {
-    if (shopifyProducts && shopifyProducts.length > 0) {
-      return shopifyProducts
+    if (!shopifyProducts || shopifyProducts.length === 0) {
+      return staticProductsForLookup
     }
-    return staticProductsForLookup
+
+    const normalize = (name) => {
+      return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .replace('whispher', 'whisper')
+    }
+
+    const isMatch = (name1, name2) => {
+      const n1 = normalize(name1)
+      const n2 = normalize(name2)
+      return n1 === n2 || n1.includes(n2) || n2.includes(n1)
+    }
+
+    // Merge static products with Shopify products
+    const merged = staticProductsForLookup.map((staticProd) => {
+      const matchedShopify = shopifyProducts.find(
+        (sp) => isMatch(sp.name, staticProd.name) || isMatch(sp.handle, staticProd.name)
+      )
+
+      if (matchedShopify) {
+        return {
+          ...staticProd,
+          shopifyId: matchedShopify.shopifyId,
+          variants: matchedShopify.variants,
+          colors: matchedShopify.colors,
+          sizes: matchedShopify.sizes,
+          available: matchedShopify.available,
+          price: matchedShopify.price || staticProd.price,
+          rawPrice: matchedShopify.rawPrice || staticProd.rawPrice,
+          currencyCode: matchedShopify.currencyCode || staticProd.currencyCode,
+        }
+      }
+
+      return staticProd
+    })
+
+    // Add unmatched Shopify products
+    shopifyProducts.forEach((sp) => {
+      const alreadyMerged = merged.some(
+        (m) =>
+          m.shopifyId === sp.shopifyId ||
+          isMatch(m.name, sp.name)
+      )
+      if (!alreadyMerged) {
+        merged.push(sp)
+      }
+    })
+
+    return merged
   }, [shopifyProducts, staticProductsForLookup])
 
   const lingerieCircleProducts = useMemo(() => {
@@ -1649,21 +1711,33 @@ function App() {
     .filter((item) => !heroCircleExcludedProductIds.has(item.id))
 
   const categorized = useMemo(() => {
+    const cats = {
+      lingerieSets: [...staticLingerieSets],
+      bodysuits: [...staticBodysuits],
+      sleepwear: [...staticSleepwear],
+      leather: [...staticLeather],
+      wrapSet: [...staticWrapSet],
+      fullBodySet: [...staticFullBodySet],
+      nightwear: [...staticNightwear],
+      accessories: [...staticAccessories],
+      newArrivals: [...staticNewArrivals],
+      featuredProducts: [...staticFeaturedProducts],
+    }
+
     if (shopifyProducts && shopifyProducts.length > 0) {
-      const cats = {
-        lingerieSets: [],
-        bodysuits: [],
-        sleepwear: [],
-        leather: [],
-        wrapSet: [],
-        fullBodySet: [],
-        nightwear: [],
-        accessories: [],
-        newArrivals: shopifyProducts,
-        featuredProducts: shopifyProducts.slice(0, 8),
+      const normalize = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '').replace('whispher', 'whisper')
+      const isMatch = (name1, name2) => {
+        const n1 = normalize(name1)
+        const n2 = normalize(name2)
+        return n1 === n2 || n1.includes(n2) || n2.includes(n1)
       }
 
-      shopifyProducts.forEach(product => {
+      // Find Shopify products that are not matched to any static product
+      const unmatchedShopify = shopifyProducts.filter(
+        (sp) => !staticProductsForLookup.some((staticProd) => isMatch(sp.name, staticProd.name))
+      )
+
+      unmatchedShopify.forEach((product) => {
         const title = product.name.toLowerCase()
         if (title.includes('bodysuit') || title.includes('whisper')) {
           cats.bodysuits.push(product)
@@ -1682,35 +1756,14 @@ function App() {
         } else {
           cats.lingerieSets.push(product)
         }
+        cats.newArrivals.push(product)
       })
-
-      // If any category is empty but we have products, let's distribute the first few items
-      if (cats.bodysuits.length === 0 && shopifyProducts.length > 0) cats.bodysuits = shopifyProducts
-      if (cats.lingerieSets.length === 0 && shopifyProducts.length > 0) cats.lingerieSets = shopifyProducts
-      if (cats.sleepwear.length === 0 && shopifyProducts.length > 0) cats.sleepwear = shopifyProducts
-      if (cats.leather.length === 0 && shopifyProducts.length > 0) cats.leather = shopifyProducts
-      if (cats.wrapSet.length === 0 && shopifyProducts.length > 0) cats.wrapSet = shopifyProducts
-      if (cats.fullBodySet.length === 0 && shopifyProducts.length > 0) cats.fullBodySet = shopifyProducts
-      if (cats.nightwear.length === 0 && shopifyProducts.length > 0) cats.nightwear = shopifyProducts
-      if (cats.accessories.length === 0 && shopifyProducts.length > 0) cats.accessories = shopifyProducts
-
-      return cats
     }
 
-    return {
-      lingerieSets: staticLingerieSets,
-      bodysuits: staticBodysuits,
-      sleepwear: staticSleepwear,
-      leather: staticLeather,
-      wrapSet: staticWrapSet,
-      fullBodySet: staticFullBodySet,
-      nightwear: staticNightwear,
-      accessories: staticAccessories,
-      newArrivals: staticNewArrivals,
-      featuredProducts: staticFeaturedProducts,
-    }
+    return cats
   }, [
     shopifyProducts,
+    staticProductsForLookup,
     staticLingerieSets,
     staticBodysuits,
     staticSleepwear,

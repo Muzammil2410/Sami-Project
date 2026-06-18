@@ -92,15 +92,14 @@ const GET_PRODUCTS_QUERY = `
   }
 `;
 
-const CREATE_CHECKOUT_MUTATION = `
-  mutation checkoutCreate($input: CheckoutCreateInput!) {
-    checkoutCreate(input: $input) {
-      checkout {
+const CREATE_CART_MUTATION = `
+  mutation cartCreate($input: CartInput!) {
+    cartCreate(input: $input) {
+      cart {
         id
-        webUrl
+        checkoutUrl
       }
-      checkoutUserErrors {
-        code
+      userErrors {
         field
         message
       }
@@ -175,21 +174,43 @@ export const createShopifyCheckout = async (lineItems) => {
   try {
     const variables = {
       input: {
-        lineItems: lineItems.map(item => ({
-          variantId: item.variantId,
+        lines: lineItems.map(item => ({
+          merchandiseId: item.variantId,
           quantity: item.quantity
         }))
       }
     };
     
-    const data = await storefrontFetch(CREATE_CHECKOUT_MUTATION, variables);
-    const checkoutResult = data.checkoutCreate;
+    console.log('[Shopify Checkout] selected variant IDs:', lineItems.map(item => item.variantId));
+    console.log('[Shopify Checkout] mutation request variables:', JSON.stringify(variables, null, 2));
     
-    if (checkoutResult.checkoutUserErrors && checkoutResult.checkoutUserErrors.length > 0) {
-      throw new Error(checkoutResult.checkoutUserErrors[0].message);
+    const data = await storefrontFetch(CREATE_CART_MUTATION, variables);
+    console.log('[Shopify Checkout] mutation response data:', JSON.stringify(data, null, 2));
+    
+    const cartResult = data.cartCreate;
+    
+    if (cartResult.userErrors && cartResult.userErrors.length > 0) {
+      throw new Error(cartResult.userErrors[0].message);
     }
     
-    return checkoutResult.checkout;
+    let checkoutUrl = cartResult.cart.checkoutUrl;
+    console.log('[Shopify Checkout] original returned checkoutUrl:', checkoutUrl);
+
+    // Force checkoutUrl to Shopify domain to bypass custom storefront DNS redirection
+    if (checkoutUrl && domain) {
+      try {
+        const urlObj = new URL(checkoutUrl);
+        urlObj.hostname = domain;
+        checkoutUrl = urlObj.toString();
+        console.log('[Shopify Checkout] transformed checkoutUrl (force Shopify domain):', checkoutUrl);
+      } catch (e) {
+        console.error('[Shopify Checkout] Failed to parse/transform checkout URL:', e);
+      }
+    }
+    
+    return {
+      webUrl: checkoutUrl
+    };
   } catch (error) {
     console.error('Failed to create Shopify checkout:', error);
     throw error;
