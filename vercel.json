@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+        {
+            "source": "/cart/c/:path*",
+            "destination": "https://hayat-choice.myshopify.com/cart/c/:path*"
+        }
+    ]
+}
